@@ -54,14 +54,7 @@ START:
 
     MAIN_LOOP:
 
-        ; clear the screen
-        MFPC R7
-        ADDIU R7 3
-        NOP
-        B CLEAR_SCREEN
-        NOP
-
-        ; enter the menu screen
+                ; enter the menu screen
         MFPC R7
         ADDIU R7 3
         NOP
@@ -115,8 +108,7 @@ ABOUT_PAD:
     NOP
 
 INT:
-    LI R0 @GLOBAL_STATE
-    LW R0 R1 0 ; the current state
+    ERET
 
     CMPI R1 1
     BTEQZ INT_CLEAR_SCREEN
@@ -204,27 +196,6 @@ TESTPRINT:
 
     ADDSP 0xfffe
 
-
-    JR R7
-    NOP
-
-
-; the menu screen returns the option in R0
-MENU_SCREEN:
-    LI R0 @GLOBAL_STATE
-    LI R1 2
-    SW R0 R1 0
-
-    
-
-    MENU_LOOP:
-       
-    B MENU_LOOP
-    NOP
-
-    LI R0 @GLOBAL_STATE
-    LI R1 0
-    SW R0 R1 0
 
     JR R7
     NOP
@@ -428,6 +399,23 @@ PRINT_STRING:
 
         LW R0 R4 4 ; R4 = y
         SW R5 R4 0xd
+        
+
+ 
+
+        LW R0 R5 5 ; R2 = type
+        SRL R5 R5 0
+        SRL R5 R5 4
+        SLL R5 R5 3
+
+        ADDU R4 R5 R4 ; R0 = next position
+
+        ; restore R5=0xbf00
+        LI R5 0xbf
+        SLL R5 R5 0
+
+        SW R0 R4 4 ; update y
+
 
         LW R0 R4 2 ; R4 = color
         SW R5 R4 0xe
@@ -446,7 +434,7 @@ PRINT_STRING:
 
         LW R0 R4 1 ; R4 = len
 
-        CMP R4 R1
+        CMP R4 R2
         BTNEZ LOOP_PRINT_STRING
         NOP
 
@@ -465,6 +453,58 @@ PRINT_STRING:
     JR R7
     NOP
     
+
+
+; the menu screen returns the option in R0
+MENU_SCREEN:
+    LI R0 @GLOBAL_STATE
+    LI R1 2
+    SW R0 R1 0
+
+; clear the screen
+;    MFPC R7
+;    ADDIU R7 3
+;    NOP
+;    B CLEAR_SCREEN
+;    NOP
+
+    LI R1 @DATA_STRING ; to write the data for printing the title
+
+    LI R0 @DATA_MENU_TITLE ; the title
+    SW R1 R0 0
+
+    LI R0 17 ; the length of the string
+    SW R1 R0 1
+    
+    LI R0 0 ; the color
+    SW R1 R0 2
+
+    LI R0 100 ; X
+    SW R1 R0 3
+
+    LI R0 100 ; Y
+    SW R1 R0 4
+
+    LLI R0 0b0100001000000001 ; the type
+    SW R1 R0 5
+
+    MFPC R7
+    ADDIU R7 3
+    NOP
+    B PRINT_STRING
+    NOP
+
+    MENU_LOOP:
+                    
+    B MENU_LOOP
+    NOP
+
+    LI R0 @GLOBAL_STATE
+    LI R1 0
+    SW R0 R1 0
+
+    JR R7
+    NOP
 
 
 

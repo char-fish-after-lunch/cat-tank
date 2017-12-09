@@ -182,8 +182,10 @@ NONEEDRETURNZERO:
     NOP
 
 TESTPRINT:
-    SW_SP R6 0
-    SW_SP R0 1
+    ADDSP 2
+
+    SW_SP R6 0xffff
+    SW_SP R0 0xfffe
 
     TESTPRINT_MID:
     NOP
@@ -196,8 +198,11 @@ TESTPRINT:
     BEQZ R0 TESTPRINT_MID
     NOP
 
-    LW_SP R6 0
-    LW_SP R0 1
+
+    LW_SP R6 0xffff
+    LW_SP R0 0xfffe
+
+    ADDSP 0xfffe
 
 
     JR R7
@@ -242,24 +247,25 @@ ABOUT:
     NOP
 
 DRAW_M_PATCH:
-
-    SW_SP R0 1
-    SW_SP R1 2
-    SW_SP R2 3
-    SW_SP R3 4
-    SW_SP R4 5
-    SW_SP R5 6
-    SW_SP R6 7
-
     ADDSP 0X10
+
+    SW_SP R0 0xffff
+    SW_SP R1 0xfffe
+    SW_SP R2 0xfffd
+    SW_SP R3 0xfffc 
+    SW_SP R4 0xfffb
+    SW_SP R5 0xffea
+    SW_SP R6 0xffe9 
+    SW_SP R7 0xffe8 
+
 
     ; ----- set enlarged size shift
     LI R5 @PATCH_TYPE
     LW R5 R4 0
     SRL R4 R4 0
     SRL R4 R4 1  ; 
-    --- R4 = enlarged x 8, also the
-    --- actual coord shift between 4 patches
+    ;--- R4 = enlarged x 8, also the
+    ;--- actual coord shift between 4 patches
 
     ; ----- draw patch 0 (left upper)
     MFPC R7
@@ -390,29 +396,33 @@ DRAW_M_PATCH:
     LW R5 R3 0
     SW R0 R3 0XE
 
+ 
+    LW_SP R0 0xffff
+    LW_SP R1 0xfffe
+    LW_SP R2 0xfffd
+    LW_SP R3 0xfffc 
+    LW_SP R4 0xfffb
+    LW_SP R5 0xffea
+    LW_SP R6 0xffe9 
+    LW_SP R7 0xffe8 
+
     ADDSP 0XFFF0
-    LW_SP R0 1
-    LW_SP R1 2
-    LW_SP R2 3
-    LW_SP R3 4
-    LW_SP R4 5
-    LW_SP R5 6
-    LW_SP R6 7
 
     JR R7
     NOP 
 
 PRINT_STRING:
-    SW_SP R0 0
-    SW_SP R1 0
-    SW_SP R2 0
-    SW_SP R3 0
-    SW_SP R4 0
-    SW_SP R5 0
-    SW_SP R6 0
-    SW_SP R7 0
-
     ADDSP 8
+
+    SW_SP R0 0xffff
+    SW_SP R1 0xfffe
+    SW_SP R2 0xfffd
+    SW_SP R3 0xfffc
+    SW_SP R4 0xfffb
+    SW_SP R5 0xfffa
+    SW_SP R6 0xfff9
+    SW_SP R7 0xfff8
+
 
 
     LI R0 @DATA_STRING
@@ -438,6 +448,9 @@ PRINT_STRING:
         LW R0 R4 2 ; R4 = color
         SW R5 R4 0xe
 
+        MFPC R7
+        ADDIU R7 3
+        NOP
         B TESTPRINT
         NOP
 
@@ -453,17 +466,17 @@ PRINT_STRING:
         BTNEZ LOOP_PRINT_STRING
         NOP
 
+
+    LW_SP R0 0xffff
+    LW_SP R1 0xfffe
+    LW_SP R2 0xfffd
+    LW_SP R3 0xfffc
+    LW_SP R4 0xfffb
+    LW_SP R5 0xfffa
+    LW_SP R6 0xfff9
+    LW_SP R7 0xfff8
+
     ADDSP 0xffe8
-
-    LW_SP R0 0
-    LW_SP R1 0
-    LW_SP R2 0
-    LW_SP R3 0
-    LW_SP R4 0
-    LW_SP R5 0
-    LW_SP R6 0
-    LW_SP R7 0
-
 
     JR R7
     NOP

@@ -11,6 +11,7 @@ NOP
 DATA:
     GLOBAL_STATE:
         .word 0
+    DATA_PATCH:
     PATCH_MASK:
         .pad 16
     PATCH_COLOR:
@@ -20,6 +21,19 @@ DATA:
     PATCH_Y:
         .word 0
     PATCH_TYPE:
+        .word 0
+    DATA_STRING:
+    STRING_POINTER:
+        .word 0
+    STRING_LEN:
+        .word 0
+    STRING_COLOR:
+        .word 0
+    STRING_X:
+        .word 0
+    STRING_Y:
+        .word 0
+    STRING_TYPE:
         .word 0
     DATA_MENU:
         DATA_MENU_TITLE:
@@ -168,6 +182,10 @@ NONEEDRETURNZERO:
     NOP
 
 TESTPRINT:
+    SW_SP R6 0
+    SW_SP R0 1
+
+    TESTPRINT_MID:
     NOP
     LI R6 0x00bf
     SLL R6 R6 0x0000
@@ -175,8 +193,13 @@ TESTPRINT:
     LW R6 R0 0x0000
     LI R6 0x0001
     AND R0 R6
-    BEQZ R0 TESTPRINT
+    BEQZ R0 TESTPRINT_MID
     NOP
+
+    LW_SP R6 0
+    LW_SP R0 1
+
+
     JR R7
     NOP
 
@@ -187,7 +210,7 @@ MENU_SCREEN:
     LI R1 2
     SW R0 R1 0
 
-    LI R1 @
+    
 
     MENU_LOOP:
        
@@ -219,6 +242,74 @@ ABOUT:
     NOP
 
 DRAW_M_PATCH:
+    
      
     JR R7
     NOP 
+
+PRINT_STRING:
+    SW_SP R0 0
+    SW_SP R1 0
+    SW_SP R2 0
+    SW_SP R3 0
+    SW_SP R4 0
+    SW_SP R5 0
+    SW_SP R6 0
+    SW_SP R7 0
+
+    ADDSP 8
+
+
+    LI R0 @DATA_STRING
+    LW R0 R1 0 ; R1 = data pointer
+
+    ; R4 is used to do everything
+
+    LI R5 0xbf
+    SLL R5 R5 0 ; R5 = 0xbf00
+
+    LI R2 0 ; R2 = offset
+    LOOP_PRINT_STRING:
+        LW R1 R3 0 ; R3 = data
+        
+        SW R5 R3 0x8
+
+        LW R0 R4 3 ; R4 = x
+        SW R5 R4 0xc
+
+        LW R0 R4 4 ; R4 = y
+        SW R5 R4 0xd
+
+        LW R0 R4 2 ; R4 = color
+        SW R5 R4 0xe
+
+        B TESTPRINT
+        NOP
+
+        LW R0 R4 5 ; R4 = type
+        SW R5 R4 0xf
+
+        ADDIU R2 1
+        ADDIU R1 1
+
+        LW R0 R4 1 ; R4 = len
+
+        CMP R4 R1
+        BTNEZ LOOP_PRINT_STRING
+        NOP
+
+    ADDSP 0xffe8
+
+    LW_SP R0 0
+    LW_SP R1 0
+    LW_SP R2 0
+    LW_SP R3 0
+    LW_SP R4 0
+    LW_SP R5 0
+    LW_SP R6 0
+    LW_SP R7 0
+
+
+    JR R7
+    NOP
+    

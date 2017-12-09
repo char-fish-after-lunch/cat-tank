@@ -11,11 +11,32 @@ NOP
 DATA:
     GLOBAL_STATE:
         .word 0
-    MAP:
-        .pad 225
+    PATCH_MASK:
+        .pad 16
+    PATCH_COLOR:
+        .word 0
+    PATCH_X:
+        .word 0
+    PATCH_Y:
+        .word 0
+    PATCH_TYPE:
+        .word 0
+    DATA_MENU:
+        DATA_MENU_TITLE:
+            .ascii WELCOME TO CATPAD! 
+        DATA_MENU_SELECTED:
+            .word 0
+    DATA_TANK:
 
+        DATA_TANK_MAP:
+            .pad 225
 
 START:
+    LI R0 0x00bf
+    SLL R0 R0 0x0000
+    ADDIU R0 0x0010
+    MTSP R0
+
 
     MAIN_LOOP:
 
@@ -49,6 +70,10 @@ START:
         BTEQZ SNAKE_PAD
         NOP
 
+        CMPI R0 3
+        BTEQZ ABOUT_PAD
+        NOP
+
         NOP
         FUNC_RET:
             
@@ -67,6 +92,11 @@ TANK_PAD:
 
 SNAKE_PAD:
     LLI R5 @SNAKE
+    JR R5
+    NOP
+
+ABOUT_PAD:
+    LLI R5 @ABOUT
     JR R5
     NOP
 
@@ -157,6 +187,13 @@ MENU_SCREEN:
     LI R1 2
     SW R0 R1 0
 
+    LI R1 @
+
+    MENU_LOOP:
+       
+    B MENU_LOOP
+    NOP
+
     LI R0 @GLOBAL_STATE
     LI R1 0
     SW R0 R1 0
@@ -167,6 +204,7 @@ MENU_SCREEN:
 TYPE:
     JR R7
     NOP
+    
 
 TANK:
     JR R7
@@ -176,3 +214,11 @@ SNAKE:
     JR R7
     NOP
 
+ABOUT:
+    JR R7
+    NOP
+
+DRAW_M_PATCH:
+     
+    JR R7
+    NOP 

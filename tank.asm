@@ -219,6 +219,162 @@ ABOUT:
     NOP
 
 DRAW_M_PATCH:
-     
+
+    SW_SP R0 1
+    SW_SP R1 2
+    SW_SP R2 3
+    SW_SP R3 4
+    SW_SP R4 5
+    SW_SP R5 6
+    SW_SP R6 7
+
+    ADDSP 0X10
+
+    ; ----- set enlarged size shift
+    LI R5 @PATCH_TYPE
+    LW R5 R4 0
+    SRL R4 R4 0
+    SRL R4 R4 1  ; 
+    --- R4 = enlarged x 8, also the
+    --- actual coord shift between 4 patches
+
+    ; ----- draw patch 0 (left upper)
+    MFPC R7
+    ADDIU R7 0x0003
+    NOP
+    B TESTPRINT
+    NOP
+    LI R0 0X00BF
+    SLL R0 R0 0
+    LI R5 @PATCH_MASK
+    LW R5 R1 0
+    SW R0 R1 0X8
+    LW R5 R1 1
+    SW R0 R1 0X9
+    LW R5 R1 2
+    SW R0 R1 0XA
+    LW R5 R1 3
+    SW R0 R1 0XB
+
+    LI R5 @PATCH_X
+    LW R5 R3 0
+    SW R0 R3 0XC
+
+    LI R5 @PATCH_Y
+    LW R5 R3 0
+    SW R0 R3 0XD
+
+    LI R5 @PATCH_COLOR
+    LW R5 R3 0
+    SW R0 R3 0XE
+
+
+
+    ; ----- draw patch 1 (right upper)
+
+    MFPC R7
+    ADDIU R7 0x0003
+    NOP
+    B TESTPRINT
+    NOP
+    LI R0 0X00BF
+    SLL R0 R0 0
+    LI R5 @PATCH_MASK
+    LW R5 R1 4
+    SW R0 R1 0X8
+    LW R5 R1 5
+    SW R0 R1 0X9
+    LW R5 R1 6
+    SW R0 R1 0XA
+    LW R5 R1 7
+    SW R0 R1 0XB
+
+    LI R5 @PATCH_X
+    LW R5 R3 0
+    SW R0 R3 0XC
+
+    LI R5 @PATCH_Y
+    LW R5 R3 0
+    ADDU R4 R5 R5
+    SW R0 R3 0XD
+
+    LI R5 @PATCH_COLOR
+    LW R5 R3 0
+    SW R0 R3 0XE
+
+
+    ; ----- draw patch 2 (left lower)
+    MFPC R7
+    ADDIU R7 0x0003
+    NOP
+    B TESTPRINT
+    NOP
+    LI R0 0X00BF
+    SLL R0 R0 0
+    LI R5 @PATCH_MASK
+    LW R5 R1 0x8
+    SW R0 R1 0X8
+    LW R5 R1 0x9
+    SW R0 R1 0X9
+    LW R5 R1 0xA
+    SW R0 R1 0XA
+    LW R5 R1 0xB
+    SW R0 R1 0XB
+
+    LI R5 @PATCH_X
+    LW R5 R3 0
+    ADDU R4 R5 R5
+    SW R0 R3 0XC
+
+    LI R5 @PATCH_Y
+    LW R5 R3 0
+    SW R0 R3 0XD
+
+    LI R5 @PATCH_COLOR
+    LW R5 R3 0
+    SW R0 R3 0XE
+
+
+    ; ----- draw patch 3 (right bottom)
+    MFPC R7
+    ADDIU R7 0x0003
+    NOP
+    B TESTPRINT
+    NOP
+    LI R0 0X00BF
+    SLL R0 R0 0
+    LI R5 @PATCH_MASK
+    LW R5 R1 0xC
+    SW R0 R1 0X8
+    LW R5 R1 0xD
+    SW R0 R1 0X9
+    LW R5 R1 0xE
+    SW R0 R1 0XA
+    LW R5 R1 0xF
+    SW R0 R1 0XB
+
+    LI R5 @PATCH_X
+    LW R5 R3 0
+    ADDU R4 R5 R5
+    SW R0 R3 0XC
+
+    LI R5 @PATCH_Y
+    LW R5 R3 0
+    ADDU R4 R5 R5
+    SW R0 R3 0XD
+
+    LI R5 @PATCH_COLOR
+    LW R5 R3 0
+    SW R0 R3 0XE
+
+    ADDSP 0XFFF0
+    LW_SP R0 1
+    LW_SP R1 2
+    LW_SP R2 3
+    LW_SP R3 4
+    LW_SP R4 5
+    LW_SP R5 6
+    LW_SP R6 7
+
     JR R7
     NOP 

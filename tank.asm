@@ -165,21 +165,95 @@ CLEAR_SCREEN:
     LI R1 0
     SW R0 R1 0
 
+
+    ADDSP 0X10
+
+    SW_SP R0 0xffff
+    SW_SP R1 0xfffe
+    SW_SP R2 0xfffd
+    SW_SP R3 0xfffc 
+    SW_SP R4 0xfffb
+    SW_SP R5 0xffea
+    SW_SP R6 0xffe9 
+    SW_SP R7 0xffe8 
+
+
+    LI R4 0x0000
+    LI R5 0x0000
+    LI R1 0x0002
+    SLL R1 R1 0x0000
+
+
+START_OF_CLEAR_SCREEN_LOOP:
+
+    MFPC R7
+    ADDIU R7 0x0003
+    NOP
+    B TESTPRINT
+
+    
+    NOP
+    NOP
+    LI R6 0x00BF
+    SLL R6 R6 0x0000
+    LI R3 0x0000
+    SW R6 R3 0x8
+
+    SW R6 R4 0xC
+    SW R6 R5 0xD
+
+    LI R0 0X1
+    SLL R0 R0 0
+    LI R3 0XFF
+    ADDU R3 R0 R0
+    SW R6 R0 0XE
+
+    LI R0 0X72
+    SLL R0 R0 0
+    LI R3 0XFF
+    ADDU R3 R0 R0
+    SW R6 0XF
+
+
+    ADDIU R4 0x0020
+    CMP R4 R1
+
+    BTEQZ CLR_CLEARTOZERO
+    NOP
+    B CLR_NONEEDRETURNZERO
+    NOP
+
+CLR_CLEARTOZERO:
+    NOP
+    LI R4 0x0000
+    ADDIU R5 0x0020
+    CMP R5 R1
+    
+    BTEQZ END_OF_CLEAR_SCREEN
+    NOP
+
+CLR_NONEEDRETURNZERO:
+    NOP
+    B START_OF_CLEAR_SCREEN_LOOP
+    NOP
+
+
+END_OF_CLEAR_SCREEN:
+ 
+    LW_SP R0 0xffff
+    LW_SP R1 0xfffe
+    LW_SP R2 0xfffd
+    LW_SP R3 0xfffc 
+    LW_SP R4 0xfffb
+    LW_SP R5 0xffea
+    LW_SP R6 0xffe9 
+    LW_SP R7 0xffe8 
+
+    ADDSP 0XFFF0
+
     JR R7
     NOP
 
-CLEARTOZERO:
-    NOP
-    LI R4 0x0000
-    ADDIU R5 0x0008
-    AND R5 R2
-    BEQZ R5 TESTSHOWTEXT
-    NOP
-
-NONEEDRETURNZERO:
-    NOP
-    B CLEAR_SCREEN
-    NOP
 
 TESTPRINT:
     ADDSP 2
@@ -247,7 +321,8 @@ DRAW_M_PATCH:
     LI R5 @PATCH_TYPE
     LW R5 R4 0
     SRL R4 R4 0
-    SRL R4 R4 1  ; 
+    SRL R4 R4 4
+    SLL R4 R4 3 
     ;--- R4 = enlarged x 8, also the
     ;--- actual coord shift between 4 patches
 

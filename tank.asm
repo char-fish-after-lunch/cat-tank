@@ -229,22 +229,6 @@ MENU_SCREEN:
     JR R7
     NOP
 
-TYPE:
-    JR R7
-    NOP
-    
-
-TANK:
-    JR R7
-    NOP
-
-SNAKE:
-    JR R7
-    NOP
-
-ABOUT:
-    JR R7
-    NOP
 
 DRAW_M_PATCH:
     ADDSP 0X10
@@ -481,3 +465,23 @@ PRINT_STRING:
     JR R7
     NOP
     
+
+
+
+
+TYPE:
+    JR R7
+    NOP
+    
+
+TANK:
+    JR R7
+    NOP
+
+SNAKE:
+    JR R7
+    NOP
+
+ABOUT:
+    JR R7
+    NOP

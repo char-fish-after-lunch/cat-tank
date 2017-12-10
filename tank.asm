@@ -11,6 +11,8 @@ NOP
 DATA:
     GLOBAL_STATE:
         .word 0
+    GLOBAL_ESC:
+        .word 0
     DATA_PATCH:
     PATCH_MASK:
         .pad 16
@@ -753,7 +755,15 @@ TYPIST_STUCK_LOOP:
     NOP
     NOP
     NOP
-    B TYPIST_STUCK_LOOP
+
+    LI R2 @GLOBAL_ESC
+    LW R2 R1 0
+    NOP
+    BEQZ R1 TYPIST_STUCK_LOOP
+    NOP
+    NOP
+    LI R1 0
+    SW R2 R1 0
     NOP
     NOP
 
@@ -914,10 +924,16 @@ ABOUT:
     NOP
     NOP
     NOP
-    NOP
-    B ABOUT_STUCK_LOOP
+
+    LI R2 @GLOBAL_ESC
+    LW R2 R1 0
+    BEQZ R1 ABOUT_STUCK_LOOP
     NOP
 
+    LI R1 0
+    SW R2 R1 0
+    NOP
+    NOP
 
     LW_SP R7 0XFFFE
     ADDSP 0XFFF0

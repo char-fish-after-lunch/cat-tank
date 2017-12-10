@@ -69,8 +69,8 @@ DATA:
             .word 28
         DATA_SENTENCE_XS:
             .word 0x70
-            .word 0x100
-            .word 0x130
+            .word 0xA0
+            .word 0xD0
 
         DATA_TYPIST_SENTENCE1:
             .ascii hello world
@@ -99,6 +99,7 @@ START:
         ADDIU R7 3
         NOP
         B MENU_SCREEN
+        ;B TYPIST_PAD
         NOP
         ; R0 = choice
 
@@ -631,7 +632,7 @@ MENU_SCREEN:
 
 
 
-TYPE:
+TYPIST:
     ADDSP 10
     SW_SP R7 0XFFFE
 
@@ -643,25 +644,25 @@ TYPE:
     NOP
 
     ; init pointers
-    LI R1 @DATA_TYPIST_SENTENCE1
-    LI R2 @DATA_SENTENCE_POINTERS
+    LLI R1 @DATA_TYPIST_SENTENCE1
+    LLI R2 @DATA_SENTENCE_POINTERS
     SW R2 R1 0
 
-    LI R1 @DATA_TYPIST_SENTENCE2
-    LI R2 @DATA_SENTENCE_POINTERS
+    LLI R1 @DATA_TYPIST_SENTENCE2
+    LLI R2 @DATA_SENTENCE_POINTERS
     SW R2 R1 1
 
-    LI R1 @DATA_TYPIST_SENTENCE3
-    LI R2 @DATA_SENTENCE_POINTERS
+    LLI R1 @DATA_TYPIST_SENTENCE3
+    LLI R2 @DATA_SENTENCE_POINTERS
     SW R2 R1 2
     
     ; init user state
-    LI R2 @DATA_TYPIST_CUR_INDEX
-    LI R1 0
+    LLI R2 @DATA_TYPIST_CUR_INDEX
+    LLI R1 0
     SW R2 R1 0
 
-    LI R2 @DATA_TYPIST_CUR_SENTENCE
-    LI R1 0
+    LLI R2 @DATA_TYPIST_CUR_SENTENCE
+    LLI R1 0
     SW R2 R1 0
 
 
@@ -669,7 +670,7 @@ TYPE:
 
     ; print typist title
     LI R1 @DATA_STRING
-    LI R2 @DATA_TYPIST_TITLE
+    LLI R2 @DATA_TYPIST_TITLE
     SW R1 R2 0
     LI R2 21
     SW R1 R2 1
@@ -700,22 +701,22 @@ TYPE:
         ; print 1 sentence
 
         LI R1 @DATA_STRING
-        LI R3 @DATA_SENTENCE_POINTERS
+        LLI R3 @DATA_SENTENCE_POINTERS
         ADDU R3 R4 R3
-        SW R3 R2 0 ; R2 points to real str
+        LW R3 R2 0 ; R2 points to real str
         SW R1 R2 0
 
-        LI R3 @DATA_SENTENCE_LENGTHS
+        LLI R3 @DATA_SENTENCE_LENGTHS
         ADDU R3 R4 R3
-        SW R3 R2 0 ; sentence length 
+        LW R3 R2 0 ; sentence length 
         SW R1 R2 1
 
         LLI R2 0B101101101 ; COLOR: SUPER LIGHT GRAY
         SW R1 R2 2
 
-        LI R3 @DATA_SENTENCE_XS
+        LLI R3 @DATA_SENTENCE_XS
         ADDU R3 R4 R3
-        SW R3 R2 0 ; sentence position (x) 
+        LW R3 R2 0 ; sentence position (x) 
         SW R1 R2 3
 
         LI R2 136 ; sentence position (y, fixed)
@@ -768,10 +769,17 @@ ABOUT:
     ADDSP 10
     SW_SP R7 0XFFFE
 
+    ; whatever, clear screen first
+    MFPC R7
+    ADDIU R7 3
+    NOP
+    B CLEAR_SCREEN
+    NOP
+
     LI R1 @DATA_STRING
 
     ; print about title
-    LI R2 @DATA_ABOUT_TITLE
+    LLI R2 @DATA_ABOUT_TITLE
     SW R1 R2 0
     LI R2 12
     SW R1 R2 1
@@ -779,10 +787,10 @@ ABOUT:
     SW R1 R2 2
     LI R2 0X50
     SW R1 R2 3
-    LI R2 0XA0
+    LI R2 112
     SW R1 R2 4
 
-    LI R2 0X22 ; TWICE SIZE
+    LI R2 0X32 ; TRIPLE SIZE
     SLL R2 R2 0
     LI R3 0XFF
     ADDU R3 R2 R2
@@ -796,13 +804,13 @@ ABOUT:
     NOP
 
     ; print about info
-    LI R2 @DATA_ABOUT_INFO
+    LLI R2 @DATA_ABOUT_INFO
     SW R1 R2 0
     LI R2 33
     SW R1 R2 1
     LI R2 0B11011011 ; COLOR: BRIGHT GRAY
     SW R1 R2 2
-    LI R2 0X70
+    LI R2 0XA0
     SW R1 R2 3
     LI R2 0X7C
     SW R1 R2 4
@@ -820,13 +828,13 @@ ABOUT:
     NOP
 
     ; print about author1
-    LI R2 @DATA_ABOUT_AUTHOR1
+    LLI R2 @DATA_ABOUT_AUTHOR1
     SW R1 R2 0
     LI R2 8
     SW R1 R2 1
     LI R2 0B11011011 ; COLOR: BRIGHT GRAY
     SW R1 R2 2
-    LI R2 0X90
+    LI R2 0XC0
     SW R1 R2 3
     LI R2 0XC0
     SW R1 R2 4
@@ -845,13 +853,13 @@ ABOUT:
 
 
     ; print about author2
-    LI R2 @DATA_ABOUT_AUTHOR2
+    LLI R2 @DATA_ABOUT_AUTHOR2
     SW R1 R2 0
     LI R2 9
     SW R1 R2 1
     LI R2 0B11011011 ; COLOR: BRIGHT GRAY
     SW R1 R2 2
-    LI R2 0XC0
+    LI R2 0XE0
     SW R1 R2 3
     LI R2 0Xb8
     SW R1 R2 4
@@ -870,13 +878,14 @@ ABOUT:
 
     
     ; print about author3
-    LI R2 @DATA_ABOUT_AUTHOR3
+    LLI R2 @DATA_ABOUT_AUTHOR3
     SW R1 R2 0
     LI R2 13
     SW R1 R2 1
     LI R2 0B11011011 ; COLOR: BRIGHT GRAY
     SW R1 R2 2
-    LI R2 0XE0
+    LI R2 0X1
+    SLL R2 R2 0
     SW R1 R2 3
     LI R2 0X98
     SW R1 R2 4
@@ -893,7 +902,15 @@ ABOUT:
     B PRINT_STRING
     NOP
 
-    
+    ABOUT_STUCK_LOOP:
+    NOP
+    NOP
+    NOP
+    NOP
+    B ABOUT_STUCK_LOOP
+    NOP
+
+
     LW_SP R7 0XFFFE
     ADDSP 0XFFF0
     JR R7

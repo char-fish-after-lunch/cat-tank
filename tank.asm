@@ -241,7 +241,7 @@ START:
         MFPC R7
         ADDIU R7 3
         NOP
-        ;B MENU_SCREEN
+        B MENU_SCREEN
         NOP
         ; R0 = choice
 
@@ -252,7 +252,7 @@ START:
         ADDIU R7 FUNC_RET
         
         
-        B SNAKE_PAD
+        ; B SNAKE_PAD
         NOP
         NOP
 
@@ -1010,11 +1010,6 @@ CLEAR_SCREEN:
     LI R1 1
     SW R0 R1 0
 
-    LI R0 @GLOBAL_STATE
-    LI R1 0
-    SW R0 R1 0
-
-
     ADDSP 0X10
 
     SW_SP R0 0xffff
@@ -1094,7 +1089,14 @@ CLR_NONEEDRETURNZERO:
 
 
 END_OF_CLEAR_SCREEN:
- 
+
+
+
+    LI R0 @GLOBAL_STATE
+    LI R1 0
+    SW R0 R1 0
+    
+     
     LW_SP R0 0xffff
     LW_SP R1 0xfffe
     LW_SP R2 0xfffd

@@ -44,6 +44,17 @@ DATA:
 
         DATA_TANK_MAP:
             .pad 225
+    DATA_ABOUT:
+        DATA_ABOUT_TITLE:
+            .ascii ABOUT CATPAD
+        DATA_ABOUT_INFO:
+            .ascii CATPAD is a pipelined PC made by:
+        DATA_ABOUT_AUTHOR1:
+            .ascii Catfish,
+        DATA_ABOUT_AUTHOR2:
+            .ascii Jason_Yu, 
+        DATA_ABOUT_AUTHOR3:
+            .ascii and John_WJs.
 
 START:
     LI R0 0x00bf
@@ -83,7 +94,7 @@ START:
 
         NOP
         FUNC_RET:
-            
+
     B MAIN_LOOP
     NOP
 
@@ -605,5 +616,137 @@ SNAKE:
     NOP
 
 ABOUT:
+
+    ADDSP 10
+    SW_SP R7 0XFFFE
+
+    LI R1 @DATA_STRING
+
+    ; print about title
+    LI R2 @DATA_ABOUT_TITLE
+    SW R1 R2 0
+    LI R2 12
+    SW R1 R2 1
+    LI R2 0B10010010 ; COLOR: GRAY CLOSE TO BLACK
+    SW R1 R2 2
+    LI R2 0X50
+    SW R1 R2 3
+    LI R2 0XA0
+    SW R1 R2 4
+
+    LI R2 0X22 ; TWICE SIZE
+    SLL R2 R2 0
+    LI R3 0XFF
+    ADDU R3 R2 R2
+    SW R1 R2 5
+
+    
+    MFPC R7
+    ADDIU R7 3
+    NOP
+    B PRINT_STRING
+    NOP
+
+    ; print about info
+    LI R2 @DATA_ABOUT_INFO
+    SW R1 R2 0
+    LI R2 33
+    SW R1 R2 1
+    LI R2 0B11011011 ; COLOR: BRIGHT GRAY
+    SW R1 R2 2
+    LI R2 0X70
+    SW R1 R2 3
+    LI R2 0X7C
+    SW R1 R2 4
+
+    LI R2 0X12 ; SINGLE SIZE
+    SLL R2 R2 0
+    LI R3 0XFF
+    ADDU R3 R2 R2
+    SW R1 R2 5
+
+    MFPC R7
+    ADDIU R7 3
+    NOP
+    B PRINT_STRING
+    NOP
+
+    ; print about author1
+    LI R2 @DATA_ABOUT_AUTHOR1
+    SW R1 R2 0
+    LI R2 8
+    SW R1 R2 1
+    LI R2 0B11011011 ; COLOR: BRIGHT GRAY
+    SW R1 R2 2
+    LI R2 0X90
+    SW R1 R2 3
+    LI R2 0XC0
+    SW R1 R2 4
+
+    LI R2 0X22 ; DOUBLE SIZE
+    SLL R2 R2 0
+    LI R3 0XFF
+    ADDU R3 R2 R2
+    SW R1 R2 5
+
+    MFPC R7
+    ADDIU R7 3
+    NOP
+    B PRINT_STRING
+    NOP
+
+
+    ; print about author2
+    LI R2 @DATA_ABOUT_AUTHOR2
+    SW R1 R2 0
+    LI R2 9
+    SW R1 R2 1
+    LI R2 0B11011011 ; COLOR: BRIGHT GRAY
+    SW R1 R2 2
+    LI R2 0XC0
+    SW R1 R2 3
+    LI R2 0Xb8
+    SW R1 R2 4
+
+    LI R2 0X22 ; DOUBLE SIZE
+    SLL R2 R2 0
+    LI R3 0XFF
+    ADDU R3 R2 R2
+    SW R1 R2 5
+
+    MFPC R7
+    ADDIU R7 3
+    NOP
+    B PRINT_STRING
+    NOP
+
+    
+    ; print about author3
+    LI R2 @DATA_ABOUT_AUTHOR3
+    SW R1 R2 0
+    LI R2 13
+    SW R1 R2 1
+    LI R2 0B11011011 ; COLOR: BRIGHT GRAY
+    SW R1 R2 2
+    LI R2 0XE0
+    SW R1 R2 3
+    LI R2 0X98
+    SW R1 R2 4
+
+    LI R2 0X22 ; DOUBLE SIZE
+    SLL R2 R2 0
+    LI R3 0XFF
+    ADDU R3 R2 R2
+    SW R1 R2 5
+
+    MFPC R7
+    ADDIU R7 3
+    NOP
+    B PRINT_STRING
+    NOP
+
+    
+    LW_SP R7 0XFFFE
+    ADDSP 0XFFF0
     JR R7
     NOP

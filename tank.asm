@@ -43,7 +43,7 @@ DATA:
     DATA_TANK:
 
         DATA_TANK_MAP:
-            .pad 225
+            .pad 256
     DATA_ABOUT:
         DATA_ABOUT_TITLE:
             .ascii ABOUT CATPAD
@@ -83,6 +83,14 @@ DATA:
             .word 0
 
         DATA_TYPIST_CUR_INDEX:
+            .word 0
+
+    DATA_SNAKE:
+        SNAKE_MAP:
+            .pad 256
+        SNAKE_QUEUE:
+            .pad 256
+        SNAKE_DIRECTION:
             .word 0
 
 START:

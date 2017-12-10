@@ -655,23 +655,33 @@ INT_TYPIST_PS2_INPUT_SKIP_PAD:
 INT_TYPIST:
     ADDSP 1
 
-    LW_SP R7 0xffff
+    SW_SP R7 0xffff
 
     MFCS R0
     CMPI R0 0xa
     BTNEZ INT_TYPIST_PS2_SKIP_PAD
     NOP
+
+    LI R1 0xbf
+    SLL R1 R1 0
+    SW R1 R0 0
+    ; for testing
+
     
     LLI R0 @DATA_TYPIST_LAST_KEY
     LW R0 R0 0 ; last key
+
+
 
     SRL R0 R0 7
     BNEZ R0 INT_TYPIST_PS2_INPUT_SKIP_PAD
     NOP
 
+
     LI R0 0xbf
     SLL R0 R0 0
     LW R0 R2 0x4 ; R2 = scan code
+
 
     CMPI R2 41
     BTEQZ INT_TYPIST_PS2_SPACE
@@ -829,7 +839,7 @@ INT_TYPIST:
     NOP
 
     INT_TYPIST_PS2_SPACE:
-    LI R1 32
+    LI R1 95
     B INT_TYPIST_PS2_RECEIVE
     NOP
 
@@ -1714,10 +1724,9 @@ TYPIST_INPUT:
     LLI R2 @DATA_SENTENCE_LENGTHS
     ADDU R1 R2 R2
     LW R2 R2 0 ; R2 = length of the previous sentence
-    ADDIU R2 0xffff
 
     TYPIST_INPUT_CL_SKIP:
-
+    ADDIU R2 0xffff
     ; fetch the data
     LI R5 @STRING_POINTER
 
@@ -1738,12 +1747,13 @@ TYPIST_INPUT:
 
     LLI R4 @DATA_SENTENCE_XS
     ADDU R4 R1 R4
+    LW R4 R4 0
     SW R5 R4 3 ; x
 
     SLL R2 R2 3
     LI R4 136
     ADDU R2 R4 R2
-    SW R5 R4 4 ; y
+    SW R5 R2 4 ; y
 
     LLI R4 0x12ff
     SW R5 R4 5 ; type
@@ -1778,6 +1788,7 @@ TYPIST_INPUT:
 
     LLI R0 @DATA_SENTENCE_LENGTHS
     ADDU R0 R1 R0 ; length of the current line
+    LW R0 R0 0
     
     ADDIU R2 1
     

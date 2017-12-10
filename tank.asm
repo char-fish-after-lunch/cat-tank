@@ -282,7 +282,8 @@ START:
         MFPC R7
         ADDIU R7 3
         NOP
-        B MENU_SCREEN
+        LLI R6 @MENU_SCREEN
+        JR R6
         NOP
  
         LI R1 @GLOBAL_ESC
@@ -666,7 +667,7 @@ INT_TYPIST_PS2_INPUT_SKIP_PAD:
 INT_TYPIST:
     ADDSP 1
 
-    LW_SP R7 0xffff
+    SW_SP R7 0xffff
 
     MFCS R0
     CMPI R0 0xa
@@ -1449,6 +1450,11 @@ SNAKE_PAINT_SCREEN:
     
     SNAKE_REFRESH_SCREEN_LOOP_END:
     
+    LW_SP R7 0xffff
+    ADDSP 0xffff
+
+    JR R7
+    NOP
 
 CLEAR_SCREEN:
     LI R0 @GLOBAL_STATE

@@ -1094,10 +1094,6 @@ INT_SNAKE:
     NOP
     NOP
 
-    JR R7
-    NOP
-
-
 INT_SNAKE_PS2:
     LI R0 0XBF
     SLL R0 R0 0
@@ -1105,7 +1101,7 @@ INT_SNAKE_PS2:
     LW R0 R1 0X4 ; scan code
 
     LI R0 @KEY_LAST
-    LW R0 R2 0;
+    LW R0 R2 0
 
     LI R3 0XE0
     CMP R2 R3
@@ -1208,7 +1204,17 @@ INT_SNAKE_PS2_RET:
 
 
 INT_SNAKE_CLK:
+    LLI R1 @SNAKE_TIME_COUNTER
+    LW R1 R2 0
+    ADDIU R2 1
+    SW R1 R2 0
+    
+    LI R1 0x1f
+    AND R2 R1
 
+    BNEZ R2 INT_SNAKE_CLK_SKIP
+    NOP
+    
 
     LLI R1 @SNAKE_GAME_STATE
     LW R1 R2 0
@@ -1218,9 +1224,8 @@ INT_SNAKE_CLK:
     NOP
     NOP
 
-    B SNAKE_PAINT_SCREEN
-    NOP
-    NOP
+
+    INT_SNAKE_CLK_SKIP:
 
     LW_SP R7 0xffff
     ADDSP 0xffff
@@ -1228,8 +1233,15 @@ INT_SNAKE_CLK:
     JR R7
     NOP
 
+    ;B SNAKE_PAINT_SCREEN
+    NOP
+    NOP
+
 
 SNAKE_REFRESH_SCREEN:
+    
+
+; --------------------------------------------------------
 
     SNAKE_GAME_LOGIC:
         LLI R5 @SNAKE_QUEUE_HEAD
@@ -1244,7 +1256,7 @@ SNAKE_REFRESH_SCREEN:
         LI R0 0X0F
         AND R0 R4 ; R0 - y grid number
 
-        CMPI R3 0
+              CMPI R3 0
         BTEQZ SNAKE_MOVES_UP
         NOP
 
@@ -1262,18 +1274,24 @@ SNAKE_REFRESH_SCREEN:
 
         SNAKE_MOVES_UP:
         ADDIU R2 0XF0
+        LI R0 0XFF
+        AND R2 R0
         B SNAKE_CHECK_NEXT_GRID
         NOP
 
+       
+
         SNAKE_MOVES_DOWN:
         ADDIU R2 0X10
+        LI R0 0XFF
+        AND R2 R0
         B SNAKE_CHECK_NEXT_GRID
         NOP
 
         SNAKE_MOVES_LEFT:
         ADDIU R0 0XFF
         LI R2 0X0F
-        AND R2 R0
+        AND R0 R2
         ADDU R0 R1 R2
         B SNAKE_CHECK_NEXT_GRID
         NOP
@@ -1281,13 +1299,15 @@ SNAKE_REFRESH_SCREEN:
         SNAKE_MOVES_RIGHT:
         ADDIU R0 1
         LI R2 0X0F
-        AND R2 R0
+        AND R0 R2
         ADDU R0 R1 R2
         B SNAKE_CHECK_NEXT_GRID
         NOP
         NOP
 
         SNAKE_CHECK_NEXT_GRID:
+  
+
         LLI R3 @SNAKE_MAP
         ADDU R3 R2 R3 ; R3 - the next grid addr
 
@@ -1310,6 +1330,8 @@ SNAKE_REFRESH_SCREEN:
         LLI R0 @SNAKE_QUEUE
         ADDU R0 R1 R0  ; R0 -> the grid of tail
         LI R1 0
+        LLI R5 @SNAKE_MAP
+        ADDU R5 R0 R0
         SW R0 R1 0 ; grid of tail set as ground
 
         LW R3 R2 0 ; R2 - the item on the next grid
@@ -1317,7 +1339,10 @@ SNAKE_REFRESH_SCREEN:
         LI R1 2
         SW R3 R1 0 ; next grid -> set to head
         LI R1 0
-        SW R4 R1 1 ; current grid -> set to body 
+        LLI R5 @SNAKE_MAP
+        ADDU R5 R4 R4
+        SW R4 R1 0 ; current grid -> set to body 
+   
 
         CMPI R2 1
         BTEQZ SNAKE_MET_SNAKE_BODY
@@ -1338,7 +1363,7 @@ SNAKE_REFRESH_SCREEN:
         LI R1 0
         SW R0 R1 0 ; game state set to 0, GAME OVER!
 
-        B SNAKE_GAME_LOGIC_END_GROWTH
+        B SNAKE_GAME_LOGIC_END
         NOP  
 
         SNAKE_MET_APPLE:
@@ -1346,6 +1371,7 @@ SNAKE_REFRESH_SCREEN:
         ; TODO: GENERATE NEW APPLE
         B SNAKE_GAME_LOGIC_END_GROWTH
         NOP
+
 
 
     SNAKE_GAME_LOGIC_END:
@@ -1453,7 +1479,6 @@ SNAKE_PAINT_SCREEN:
             SW R0 R5 0xe ; color
             LLI R1 0b0100001011111111 ; type
             SW R0 R1 0xf
-
     SNAKE_READY_NEXT_LOOP:
 
         LI R5 0XFF
@@ -1471,6 +1496,7 @@ SNAKE_PAINT_SCREEN:
 
     JR R7
     NOP
+
 
 CLEAR_SCREEN:
 
@@ -1859,7 +1885,6 @@ MENU_SCREEN:
     ADDSP 1
     
     SW_SP R7 0xffff
-
 ; clear the screen
 
     MFPC R7
@@ -2124,6 +2149,11 @@ TYPIST_INPUT:
 
     TYPIST_INPUT_CL_SKIP:
     ADDIU R2 0xffff
+
+    ; already out of the range
+    CMPI R1 3
+    BTEQZ TYPIST_INPUT_SKIP
+    NOP
     ; fetch the data
     LI R5 @STRING_POINTER
 
@@ -2201,6 +2231,8 @@ TYPIST_INPUT:
     LLI R0 @DATA_TYPIST_CUR_SENTENCE
     SW R0 R1 0 ; R1 = next sentence
     SW R0 R2 1 ; R2 = next index
+
+    TYPIST_INPUT_SKIP:
 
     LW_SP R0 0xffff
     LW_SP R1 0xfffe
@@ -2418,11 +2450,11 @@ SNAKE:
 SNAKE_INIT_GAME:
 
     LLI R2 @SNAKE_GAME_STATE
-    LI R1 0
+    LI R1 1
     SW R2 R1 0 ; game is not started
 
     ; clear the map and snake
-    LI R1 4
+    LI R1 3
     LLI R2 @SNAKE_QUEUE_HEAD
     SW R2 R1 0
     LI R1 0
@@ -2470,7 +2502,15 @@ SNAKE_INIT_GAME:
     ADDU R4 R1 R5
     LI R6 2        ; head here
     SW R5 R6 0
-    
+
+
+    MFPC R7
+    ADDIU R7 5
+    ADDSP 1
+    SW_SP R7 0xffff
+    NOP
+    B SNAKE_PAINT_SCREEN
+    NOP
 
 
     LI R0 @GLOBAL_STATE

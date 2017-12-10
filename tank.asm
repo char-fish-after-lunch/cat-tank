@@ -29,7 +29,42 @@ INT:
     SW_SP R0 0xfff7
 
     ; ----------------------------------------
-    
+
+    MFCS R0 ; cause
+    CMPI R0 0xa
+    BTEQZ INT_PS2
+    NOP
+
+    B INT_SKIP
+    NOP
+
+    INT_PS2:
+        LI R1 @GLOBAL_KEY
+        LW R1 R1 0 ; last key
+        
+        SRL R1 R1 7
+        BNEZ R1 INT_PS2_RET
+        NOP
+
+        LI R1 0xbf
+        SLL R1 R1 0
+        LW R1 R1 0x4
+        CMPI R1 0x76
+        BTNEZ INT_PS2_RET
+        NOP
+        
+        LI R1 @GLOBAL_ESC
+        LI R2 1
+        SW R1 R2 0 
+
+        INT_PS2_RET:
+            LI R1 @GLOBAL_KEY
+            LI R2 0xbf
+            SLL R2 R2 0
+            LW R2 R2 0x4
+            SW R1 R2 0
+   
+    INT_SKIP: 
     LI R0 @GLOBAL_STATE
     LW R0 R1 0
 
@@ -111,6 +146,8 @@ DATA:
     GLOBAL_STATE:
         .word 0
     GLOBAL_ESC:
+        .word 0
+    GLOBAL_KEY:
         .word 0
     DATA_PATCH:
     PATCH_MASK:
@@ -198,17 +235,21 @@ DATA:
             .word 0xD0
 
         DATA_TYPIST_SENTENCE1:
-            .ascii hello world
+            .ascii hello_world
         DATA_TYPIST_SENTENCE2:
-            .ascii i love study, i love deadlines
+            .ascii i_love_study,_i_love_deadlines
         DATA_TYPIST_SENTENCE3:
-            .ascii typing these words is boring
+            .ascii typing_these_words_is_boring
 
+        DATA_TYPIST_LAST_KEY:
+            .word 0
+        DATA_TYPIST_CUR_INPUT:
+            .word 0
         DATA_TYPIST_CUR_SENTENCE:
             .word 0
 
         DATA_TYPIST_CUR_INDEX:
-            .word 0
+            .word 0 
 
     DATA_SNAKE:
         SNAKE_RANDOM:
@@ -239,14 +280,27 @@ START:
 
                 ; enter the menu screen
         MFPC R7
-        ADDIU R7 3
+        ADDIU R7 8
         NOP
-        B MENU_SCREEN
+        LLI R5 @MENU_SCREEN
+        JR R5
         NOP
-        ; R0 = choice
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+ 
+        LI R1 @GLOBAL_ESC
+        LI R0 0
+        SW R1 R0 0
+        
 
+        ; R0 = choice
         LI R1 @DATA_MENU_SELECTED
         LW R1 R0 0
+
 
         MFPC R7
         ADDIU R7 FUNC_RET
@@ -608,9 +662,417 @@ INT_ABOUT:
     JR R7
     NOP
 
+INT_TYPIST_PS2_SKIP_PAD:
+    B INT_TYPIST_PS2_SKIP
+    NOP
+
+INT_TYPIST_PS2_INPUT_SKIP_PAD:
+    B INT_TYPIST_PS2_INPUT_SKIP
+    NOP
+
 INT_TYPIST:
+    ADDSP 1
+
+    SW_SP R7 0xffff
+
+    MFCS R0
+    CMPI R0 0xa
+    BTNEZ INT_TYPIST_PS2_SKIP_PAD
+    NOP
+
+    LI R1 0xbf
+    SLL R1 R1 0
+    SW R1 R0 0
+    ; for testing
+
+    
+    LLI R0 @DATA_TYPIST_LAST_KEY
+    LW R0 R0 0 ; last key
+
+
+
+    SRL R0 R0 7
+    BNEZ R0 INT_TYPIST_PS2_INPUT_SKIP_PAD
+    NOP
+
+
+    LI R0 0xbf
+    SLL R0 R0 0
+    LW R0 R2 0x4 ; R2 = scan code
+
+
+    CMPI R2 41
+    BTEQZ INT_TYPIST_PS2_SPACE
+    NOP
+
+    CMPI R2 65
+    BTEQZ INT_TYPIST_PS2_COMMA
+    NOP
+
+    CMPI R2 28
+    BTEQZ INT_TYPIST_PS2_a
+    NOP
+
+    CMPI R2 50
+    BTEQZ INT_TYPIST_PS2_b
+    NOP
+
+    CMPI R2 33
+    BTEQZ INT_TYPIST_PS2_c
+    NOP
+
+    CMPI R2 35
+    BTEQZ INT_TYPIST_PS2_d
+    NOP
+
+    CMPI R2 36
+    BTEQZ INT_TYPIST_PS2_e
+    NOP
+
+    CMPI R2 43
+    BTEQZ INT_TYPIST_PS2_f
+    NOP
+
+    CMPI R2 52
+    BTEQZ INT_TYPIST_PS2_g
+    NOP
+
+    CMPI R2 51
+    BTEQZ INT_TYPIST_PS2_h
+    NOP
+
+    CMPI R2 67
+    BTEQZ INT_TYPIST_PS2_i
+    NOP
+
+    CMPI R2 59
+    BTEQZ INT_TYPIST_PS2_j
+    NOP
+
+    CMPI R2 66
+    BTEQZ INT_TYPIST_PS2_k
+    NOP
+
+    CMPI R2 75
+    BTEQZ INT_TYPIST_PS2_l
+    NOP
+
+    CMPI R2 58
+    BTEQZ INT_TYPIST_PS2_m
+    NOP
+
+    CMPI R2 49
+    BTEQZ INT_TYPIST_PS2_n
+    NOP
+
+    CMPI R2 68
+    BTEQZ INT_TYPIST_PS2_o
+    NOP
+
+    CMPI R2 77
+    BTEQZ INT_TYPIST_PS2_p
+    NOP
+
+    CMPI R2 21
+    BTEQZ INT_TYPIST_PS2_q
+    NOP
+
+    CMPI R2 45
+    BTEQZ INT_TYPIST_PS2_r
+    NOP
+
+    CMPI R2 27
+    BTEQZ INT_TYPIST_PS2_s
+    NOP
+
+    CMPI R2 44
+    BTEQZ INT_TYPIST_PS2_t
+    NOP
+
+    CMPI R2 60
+    BTEQZ INT_TYPIST_PS2_u
+    NOP
+
+    CMPI R2 42
+    BTEQZ INT_TYPIST_PS2_v
+    NOP
+
+    CMPI R2 29
+    BTEQZ INT_TYPIST_PS2_w
+    NOP
+
+    CMPI R2 34
+    BTEQZ INT_TYPIST_PS2_x
+    NOP
+
+    CMPI R2 53
+    BTEQZ INT_TYPIST_PS2_y
+    NOP
+
+    CMPI R2 26
+    BTEQZ INT_TYPIST_PS2_z
+    NOP
+
+    CMPI R2 69
+    BTEQZ INT_TYPIST_PS2_0
+    NOP
+
+    CMPI R2 22
+    BTEQZ INT_TYPIST_PS2_1
+    NOP
+
+    CMPI R2 30
+    BTEQZ INT_TYPIST_PS2_2
+    NOP
+
+    CMPI R2 38
+    BTEQZ INT_TYPIST_PS2_3
+    NOP
+
+    CMPI R2 37
+    BTEQZ INT_TYPIST_PS2_4
+    NOP
+
+    CMPI R2 46
+    BTEQZ INT_TYPIST_PS2_5
+    NOP
+
+    CMPI R2 54
+    BTEQZ INT_TYPIST_PS2_6
+    NOP
+
+    CMPI R2 61
+    BTEQZ INT_TYPIST_PS2_7
+    NOP
+
+    CMPI R2 62
+    BTEQZ INT_TYPIST_PS2_8
+    NOP
+
+    CMPI R2 70
+    BTEQZ INT_TYPIST_PS2_9
+    NOP
+
+    B INT_TYPIST_PS2_INPUT_SKIP
+    NOP
+
+    INT_TYPIST_PS2_SPACE:
+    LI R1 95
+    B INT_TYPIST_PS2_RECEIVE
+    NOP
+
+    INT_TYPIST_PS2_COMMA:
+    LI R1 44
+    B INT_TYPIST_PS2_RECEIVE
+    NOP
+
+    INT_TYPIST_PS2_a:
+    LI R1 97
+    B INT_TYPIST_PS2_RECEIVE
+    NOP
+
+    INT_TYPIST_PS2_b:
+    LI R1 98
+    B INT_TYPIST_PS2_RECEIVE
+    NOP
+
+    INT_TYPIST_PS2_c:
+    LI R1 99
+    B INT_TYPIST_PS2_RECEIVE
+    NOP
+
+    INT_TYPIST_PS2_d:
+    LI R1 100
+    B INT_TYPIST_PS2_RECEIVE
+    NOP
+
+    INT_TYPIST_PS2_e:
+    LI R1 101
+    B INT_TYPIST_PS2_RECEIVE
+    NOP
+
+    INT_TYPIST_PS2_f:
+    LI R1 102
+    B INT_TYPIST_PS2_RECEIVE
+    NOP
+
+    INT_TYPIST_PS2_g:
+    LI R1 103
+    B INT_TYPIST_PS2_RECEIVE
+    NOP
+
+    INT_TYPIST_PS2_h:
+    LI R1 104
+    B INT_TYPIST_PS2_RECEIVE
+    NOP
+
+    INT_TYPIST_PS2_i:
+    LI R1 105
+    B INT_TYPIST_PS2_RECEIVE
+    NOP
+
+    INT_TYPIST_PS2_j:
+    LI R1 106
+    B INT_TYPIST_PS2_RECEIVE
+    NOP
+
+    INT_TYPIST_PS2_k:
+    LI R1 107
+    B INT_TYPIST_PS2_RECEIVE
+    NOP
+
+    INT_TYPIST_PS2_l:
+    LI R1 108
+    B INT_TYPIST_PS2_RECEIVE
+    NOP
+
+    INT_TYPIST_PS2_m:
+    LI R1 109
+    B INT_TYPIST_PS2_RECEIVE
+    NOP
+
+    INT_TYPIST_PS2_n:
+    LI R1 110
+    B INT_TYPIST_PS2_RECEIVE
+    NOP
+
+    INT_TYPIST_PS2_o:
+    LI R1 111
+    B INT_TYPIST_PS2_RECEIVE
+    NOP
+
+    INT_TYPIST_PS2_p:
+    LI R1 112
+    B INT_TYPIST_PS2_RECEIVE
+    NOP
+
+    INT_TYPIST_PS2_q:
+    LI R1 113
+    B INT_TYPIST_PS2_RECEIVE
+    NOP
+
+    INT_TYPIST_PS2_r:
+    LI R1 114
+    B INT_TYPIST_PS2_RECEIVE
+    NOP
+
+    INT_TYPIST_PS2_s:
+    LI R1 115
+    B INT_TYPIST_PS2_RECEIVE
+    NOP
+
+    INT_TYPIST_PS2_t:
+    LI R1 116
+    B INT_TYPIST_PS2_RECEIVE
+    NOP
+
+    INT_TYPIST_PS2_u:
+    LI R1 117
+    B INT_TYPIST_PS2_RECEIVE
+    NOP
+
+    INT_TYPIST_PS2_v:
+    LI R1 118
+    B INT_TYPIST_PS2_RECEIVE
+    NOP
+
+    INT_TYPIST_PS2_w:
+    LI R1 119
+    B INT_TYPIST_PS2_RECEIVE
+    NOP
+
+    INT_TYPIST_PS2_x:
+    LI R1 120
+    B INT_TYPIST_PS2_RECEIVE
+    NOP
+
+    INT_TYPIST_PS2_y:
+    LI R1 121
+    B INT_TYPIST_PS2_RECEIVE
+    NOP
+
+    INT_TYPIST_PS2_z:
+    LI R1 122
+    B INT_TYPIST_PS2_RECEIVE
+    NOP
+
+    INT_TYPIST_PS2_0:
+    LI R1 48
+    B INT_TYPIST_PS2_RECEIVE
+    NOP
+
+    INT_TYPIST_PS2_1:
+    LI R1 49
+    B INT_TYPIST_PS2_RECEIVE
+    NOP
+
+    INT_TYPIST_PS2_2:
+    LI R1 50
+    B INT_TYPIST_PS2_RECEIVE
+    NOP
+
+    INT_TYPIST_PS2_3:
+    LI R1 51
+    B INT_TYPIST_PS2_RECEIVE
+    NOP
+
+    INT_TYPIST_PS2_4:
+    LI R1 52
+    B INT_TYPIST_PS2_RECEIVE
+    NOP
+
+    INT_TYPIST_PS2_5:
+    LI R1 53
+    B INT_TYPIST_PS2_RECEIVE
+    NOP
+
+    INT_TYPIST_PS2_6:
+    LI R1 54
+    B INT_TYPIST_PS2_RECEIVE
+    NOP
+
+    INT_TYPIST_PS2_7:
+    LI R1 55
+    B INT_TYPIST_PS2_RECEIVE
+    NOP
+
+    INT_TYPIST_PS2_8:
+    LI R1 56
+    B INT_TYPIST_PS2_RECEIVE
+    NOP
+
+    INT_TYPIST_PS2_9:
+    LI R1 57
+    B INT_TYPIST_PS2_RECEIVE
+    NOP
+
+    INT_TYPIST_PS2_RECEIVE:
+
+    LLI R0 @DATA_TYPIST_CUR_INPUT
+    SW R0 R1 0
+
+    MFPC R7
+    ADDIU R7 3
+    NOP
+    B TYPIST_INPUT
+    NOP
+
+
+    INT_TYPIST_PS2_INPUT_SKIP:
+
+    ; update the last scan code
+    LLI R0 @DATA_TYPIST_LAST_KEY
+    SW R0 R2 0
+
+    INT_TYPIST_PS2_SKIP:
+
+    LW_SP R7 0xffff
+    ADDSP 0xffff
+
     JR R7
     NOP
+
+
 
 INT_TANK:
     JR R7
@@ -1004,11 +1466,13 @@ SNAKE_PAINT_SCREEN:
     
     SNAKE_REFRESH_SCREEN_LOOP_END:
     
+    LW_SP R7 0xffff
+    ADDSP 0xffff
+
+    JR R7
+    NOP
 
 CLEAR_SCREEN:
-    LI R0 @GLOBAL_STATE
-    LI R1 1
-    SW R0 R1 0
 
     ADDSP 0X10
 
@@ -1090,11 +1554,6 @@ CLR_NONEEDRETURNZERO:
 
 END_OF_CLEAR_SCREEN:
 
-
-
-    LI R0 @GLOBAL_STATE
-    LI R1 0
-    SW R0 R1 0
     
      
     LW_SP R0 0xffff
@@ -1401,10 +1860,6 @@ MENU_SCREEN:
     
     SW_SP R7 0xffff
 
-    LI R0 @GLOBAL_STATE
-    LI R1 1
-    SW R0 R1 0
-
 ; clear the screen
 
     MFPC R7
@@ -1419,7 +1874,7 @@ MENU_SCREEN:
     LI R0 @DATA_MENU_TITLE ; the title
     SW R1 R0 0
 
-    LI R0 17 ; the length of the string
+    LI R0 18 ; the length of the string
     SW R1 R0 1
     
     LI R0 0 ; the color
@@ -1540,7 +1995,7 @@ MENU_SCREEN:
         NOP
         NOP
         NOP
-        LI R5 @DATA_MENU_OK
+        LLI R5 @DATA_MENU_OK
         NOP
         NOP
         NOP
@@ -1584,10 +2039,6 @@ MENU_SCREEN:
         NOP
         NOP
 
-    LI R0 0xbf
-    SLL R0 R0 0
-    SW R0 R4 0
-
     LI R0 @GLOBAL_STATE
     LI R1 0
     SW R0 R1 0
@@ -1599,7 +2050,171 @@ MENU_SCREEN:
     JR R7
     NOP
 
+TYPIST_INPUT:
+    ADDSP 8
+    SW_SP R0 0xffff
+    SW_SP R1 0xfffe
+    SW_SP R2 0xfffd
+    SW_SP R3 0xfffc 
+    SW_SP R4 0xfffb
+    SW_SP R5 0xfffa
+    SW_SP R6 0xfff9 
+    SW_SP R7 0xfff8 
 
+    LLI R0 @DATA_TYPIST_CUR_SENTENCE
+    LW R0 R1 0 ; R1 = cur sentence
+    LW R0 R2 1 ; R2 = cur index
+
+    CMPI R1 3
+    BTEQZ TYPIST_INPUT_NEXT_SKIP
+    NOP
+
+    ; ----------- render the next word --------------
+    LLI R0 @DATA_SENTENCE_POINTERS
+    ADDU R0 R1 R0 
+    LW R0 R0 0
+
+    ADDU R0 R2 R0 
+    ; R0 = pointer to the current(next) character
+
+    LI R3 @STRING_POINTER
+    SW R3 R0 0 ; pointer
+    LI R0 1
+    SW R3 R0 1 ; len
+    LI R0 0
+    SW R3 R0 2 ; color
+
+    LLI R0 @DATA_SENTENCE_XS
+    ADDU R0 R1 R0
+    LW R0 R0 0 ; R0 = x
+    SW R3 R0 3
+
+    SLL R0 R2 3
+    LI R4 136
+    ADDU R0 R4 R0 ; R0 = y
+    SW R3 R0 4
+     
+    LLI R0 0x12ff
+    SW R3 R0 5
+
+    MFPC R7
+    ADDIU R7 3
+    NOP
+    B PRINT_STRING
+    NOP
+
+    ; ---------------------
+
+    TYPIST_INPUT_NEXT_SKIP:
+    ADDU R1 R2 R3
+    BEQZ R3 TYPIST_INPUT_CLEAR_SKIP ; this means we are now 
+    ; in the initial state
+    NOP
+
+    ; go the the previous position
+
+    BNEZ R2 TYPIST_INPUT_CL_SKIP
+    NOP
+    ; change line
+
+    ADDIU R1 0xffff
+    LLI R2 @DATA_SENTENCE_LENGTHS
+    ADDU R1 R2 R2
+    LW R2 R2 0 ; R2 = length of the previous sentence
+
+    TYPIST_INPUT_CL_SKIP:
+    ADDIU R2 0xffff
+    ; fetch the data
+    LI R5 @STRING_POINTER
+
+    LLI R0 @DATA_SENTENCE_POINTERS
+    ADDU R0 R1 R0
+    LW R0 R0 0
+    ADDU R0 R2 R0
+
+    SW R5 R0 0 ; pointer
+
+    LW R0 R0 0 ; the ascii of the previous character
+    
+    LLI R3 @DATA_TYPIST_CUR_INPUT
+    LW R3 R3 0 ; the input
+
+    LI R4 1
+    SW R5 R4 1 ; length
+
+    LLI R4 @DATA_SENTENCE_XS
+    ADDU R4 R1 R4
+    LW R4 R4 0
+    SW R5 R4 3 ; x
+
+    SLL R2 R2 3
+    LI R4 136
+    ADDU R2 R4 R2
+    SW R5 R2 4 ; y
+
+    LLI R4 0x12ff
+    SW R5 R4 5 ; type
+
+    CMP R0 R3
+
+    ; set the color
+    LLI R4 0b000111000
+    SW R5 R4 2
+
+    BTEQZ TYPIST_INPUT_CORRECT
+    NOP
+    LLI R4 0b111000000
+    SW R5 R4 2
+
+    TYPIST_INPUT_CORRECT:
+    
+    MFPC R7
+    ADDIU R7 3
+    NOP
+    B PRINT_STRING
+    NOP
+     
+    ; ------- clear the last position ---------
+
+    TYPIST_INPUT_CLEAR_SKIP:
+    
+
+    LLI R0 @DATA_TYPIST_CUR_SENTENCE
+    LW R0 R1 0 ; R1 = cur sentence
+    LW R0 R2 1 ; R2 = cur index
+
+    LLI R0 @DATA_SENTENCE_LENGTHS
+    ADDU R0 R1 R0 ; length of the current line
+    LW R0 R0 0
+    
+    ADDIU R2 1
+    
+    CMP R2 R0
+    BTNEZ TYPIST_INPUT_NEXT_CL_SKIP
+    NOP
+    ; move to the next line
+    ADDIU R1 1
+    LI R2 0
+
+    TYPIST_INPUT_NEXT_CL_SKIP:
+
+    LLI R0 @DATA_TYPIST_CUR_SENTENCE
+    SW R0 R1 0 ; R1 = next sentence
+    SW R0 R2 1 ; R2 = next index
+
+    LW_SP R0 0xffff
+    LW_SP R1 0xfffe
+    LW_SP R2 0xfffd
+    LW_SP R3 0xfffc 
+    LW_SP R4 0xfffb
+    LW_SP R5 0xfffa
+    LW_SP R6 0xfff9 
+    LW_SP R7 0xfff8 
+
+    ADDSP 0xfff8
+
+    JR R7
+    NOP
 
 
 TYPIST:
@@ -1709,6 +2324,22 @@ TYPIST:
         BTNEZ TYPE_PRINT_SENTENCE_LOOP
         NOP
 
+        ; clear the state
+        LLI R1 @DATA_TYPIST_CUR_SENTENCE
+        LI R2 0
+        SW R1 R2 0
+        SW R1 R2 1
+
+        MFPC R7
+        ADDIU R7 3
+        NOP
+        B TYPIST_INPUT
+        NOP
+
+        ; enter the loop
+        LI R0 @GLOBAL_STATE
+        LI R1 2
+        SW R0 R1 0 
 
 TYPIST_STUCK_LOOP:
     NOP
@@ -1717,7 +2348,28 @@ TYPIST_STUCK_LOOP:
     NOP
 
     LI R2 @GLOBAL_ESC
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
     LW R2 R1 0
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
     NOP
     BEQZ R1 TYPIST_STUCK_LOOP
     NOP
@@ -1726,6 +2378,12 @@ TYPIST_STUCK_LOOP:
     SW R2 R1 0
     NOP
     NOP
+
+    
+    LI R0 @GLOBAL_STATE
+    LI R1 0
+    SW R0 R1 0 
+
 
 
     LW_SP R7 0XFFFE
@@ -2095,9 +2753,6 @@ ABOUT:
 
     LI R1 0
     SW R2 R1 0
-    NOP
-    NOP
-
     LW_SP R7 0XFFFE
     ADDSP 0XFFF0
     JR R7

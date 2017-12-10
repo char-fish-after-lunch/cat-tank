@@ -35,10 +35,34 @@ DATA:
         .word 0
     STRING_TYPE:
         .word 0
+    KEY_LAST: ; the last scan code
+        .word 0
     DATA_MENU:
         DATA_MENU_TITLE:
             .ascii WELCOME TO CATPAD! 
+        DATA_MENU_OPTION0:
+            DATA_MENU_OPTION0_LEN:
+            .word 6
+            DATA_MENU_OPTION0_TEXT:
+            .ascii Typist
+        DATA_MENU_OPTION1:
+            DATA_MENU_OPTION1_LEN:
+            .word 4
+            DATA_MENU_OPTION1_TEXT:
+            .ascii Tank
+        DATA_MENU_OPTION2:
+            DATA_MENU_OPTION2_LEN:
+            .word 5
+            DATA_MENU_OPTION2_TEXT:
+            .ascii Snake
+        DATA_MENU_OPTION3:
+            DATA_MENU_OPTION3_LEN:
+            .word 5
+            DATA_MENU_OPTION3_TEXT:
+            .ascii About
         DATA_MENU_SELECTED:
+            .word 0
+        DATA_MENU_OK:
             .word 0
     DATA_TANK:
 
@@ -119,44 +143,389 @@ ABOUT_PAD:
     NOP
 
 INT:
-    ERET
+    ; ---------------- save the state -------------
+    ADDSP 9
 
-    CMPI R1 1
-    BTEQZ INT_CLEAR_SCREEN
+    SW_SP R0 0xffff
+    SW_SP R1 0xfffe
+    SW_SP R2 0xfffd
+    SW_SP R3 0xfffc 
+    SW_SP R4 0xfffb
+    SW_SP R5 0xfffa
+    SW_SP R6 0xfff9 
+    SW_SP R7 0xfff8 
+
+    MFT R0
+    SW_SP R0 0xfff7
+
+    ; ----------------------------------------
+    
+    LI R0 @GLOBAL_STATE
+    LW R0 R1 0
+
+    MFPC R7
+    ADDIU R7 INT_RECOVER
     NOP
-
+    
     CMPI R1 1
-    BTEQZ INT_MENU_SCREEN
+    BTEQZ INT_MENU_SCREEN_PAD
     NOP
 
     CMPI R1 2
-    BTEQZ INT_TYPIST
+    BTEQZ INT_TYPIST_PAD
     NOP
 
     CMPI R1 3
-    BTEQZ INT_TANK
+    BTEQZ INT_TANK_PAD
     NOP
 
     CMPI R1 4
-    BTEQZ INT_SNAKE
+    BTEQZ INT_SNAKE_PAD
     NOP
 
+    CMPI R1 5
+    BTEQZ INT_ABOUT_PAD
+    NOP
+
+    NOP
+    NOP
+    NOP
+    INT_RECOVER:
+
+    ; ------------------- restore the state ---------------
+    LW_SP R0 0xfff7
+    MTT R0
+
+    LW_SP R0 0xffff
+    LW_SP R1 0xfffe
+    LW_SP R2 0xfffd
+    LW_SP R3 0xfffc 
+    LW_SP R4 0xfffb
+    LW_SP R5 0xfffa
+    LW_SP R6 0xfff9 
+    LW_SP R7 0xfff8 
+
+    ADDSP 0xfff7
+
     ERET
 
-INT_CLEAR_SCREEN:
-    ERET
+INT_MENU_SCREEN_PAD:
+    B INT_MENU_SCREEN
+    NOP
+
+INT_TYPIST_PAD:
+    B INT_TYPIST
+    NOP
+
+INT_SNAKE_PAD:
+    B INT_SNAKE
+    NOP
+
+INT_TANK_PAD:
+    B INT_TANK
+    NOP
+
+INT_ABOUT_PAD:
+    B INT_ABOUT
+    NOP
 
 INT_MENU_SCREEN:
-    ERET
+    MFCS R0
+    CMPI R0 0xa
+    BTEQZ INT_MENU_SCREEN_PS2
+    NOP
+    JR R7
+    NOP
+
+INT_MENU_SCREEN_PS2:
+    ADDSP 1
+    SW_SP R7 0xffff
+    
+    LI R0 0xbf
+    SLL R0 R0 0 ; R0 = 0xbf00
+
+    LW R0 R1 0x4 ; scan code
+    
+    SW R0 R1 0 ; for testing
+
+    ; B INT_MENU_SCREEN_PS2_RET
+
+    LI R0 @KEY_LAST
+    LW R0 R2 0 ; last scan code
+
+    
+    LI R3 0xe0
+    CMP R2 R3
+
+
+INT_MENU_SCREEN:
+    MFCS R0
+    CMPI R0 0xa
+    BTEQZ INT_MENU_SCREEN_PS2
+    NOP
+    JR R7
+    NOP
+
+INT_MENU_SCREEN_PS2:
+    ADDSP 1
+    SW_SP R7 0xffff
+    
+    LI R0 0xbf
+    SLL R0 R0 0 ; R0 = 0xbf00
+
+    LW R0 R1 0x4 ; scan code
+    
+    SW R0 R1 0 ; for testing
+
+    ; B INT_MENU_SCREEN_PS2_RET
+
+    LI R0 @KEY_LAST
+    LW R0 R2 0 ; last scan code
+
+    
+    LI R3 0xe0
+    CMP R2 R3
+    BTEQZ INT_MENU_SCREEN_PS2_PAD
+    NOP
+    LI R3 0xf0
+    CMP R2 R3
+    BTNEZ INT_MENU_SCREEN_PS2_RET_SKIP1
+    NOP
+    B INT_MENU_SCREEN_PS2_RET
+    NOP
+    INT_MENU_SCREEN_PS2_RET_SKIP1:
+
+    NOP
+
+    INT_MENU_SCREEN_PS2_NO_PAD:
+    CMPI R1 0x5a
+
+    BTNEZ INT_MENU_SCREEN_PS2_ENTER_SKIP1
+    NOP
+    B INT_MENU_SCREEN_PS2_ENTER
+    NOP
+    INT_MENU_SCREEN_PS2_ENTER_SKIP1:
+
+    NOP
+    B INT_MENU_SCREEN_PS2_RET
+    NOP
+
+
+    INT_MENU_SCREEN_PS2_PAD:
+    CMPI R1 0x75 ; u arrow
+    BTEQZ INT_MENU_SCREEN_PS2_UARROW
+    NOP
+
+    CMPI R1 0x72 ; d arrow
+    BTEQZ INT_MENU_SCREEN_PS2_DARROW
+    NOP
+    
+    B INT_MENU_SCREEN_PS2_RET
+    NOP
+
+    INT_MENU_SCREEN_PS2_UARROW:
+        LI R0 @DATA_MENU_SELECTED
+        LW R0 R4 0 ; currently selected
+
+               ; at boundary
+        CMPI R4 0
+        BTNEZ INT_MENU_SCREEN_PS2_RET_SKIP2
+        NOP
+        B INT_MENU_SCREEN_PS2_RET
+        NOP
+        INT_MENU_SCREEN_PS2_RET_SKIP2:
+        NOP
+
+        ; --------------- clear the selected sign ----------------
+        LI R0 0xbf
+        SLL R0 R0 0
+
+        SLL R5 R4 5
+        ADDIU R5 90 ; position y
+        ADDIU R5 90 ; position y
+
+        LI R3 26
+        SW R0 R3 0x8
+
+        SW R0 R5 0xc
+
+        LI R3 70
+        SW R0 R3 0xd
+
+        LLI R3 0xffff
+        SW R0 R3 0xe
+
+        MFPC R7
+        ADDIU R7 3
+        NOP
+        B TESTPRINT
+        NOP
+
+        ; --------------------------
+        LLI R3 0b0010001000000001 ; the type
+        SW R0 R3 0xf
+
+
+        LI R0 @DATA_MENU_SELECTED
+        ADDIU R4 0xffff
+        SW R0 R4 0
+
+
+
+        ; --------------- draw the new selected sign ----------------
+        LI R0 0xbf
+        SLL R0 R0 0
+
+        SLL R5 R4 5
+        ADDIU R5 90 ; position y
+        ADDIU R5 90 ; position y
+
+        LI R0 0xbf
+        SLL R0 R0 0
+
+        LI R3 62
+        SW R0 R3 0x8
+
+        SW R0 R5 0xc
+
+        LI R3 70
+        SW R0 R3 0xd
+
+        LI R3 0
+        SW R0 R3 0xe
+
+        MFPC R7
+        ADDIU R7 3
+        NOP
+        B TESTPRINT
+        NOP
+
+        LLI R3 0b0010001000000001 ; the type
+        SW R0 R3 0xf
+
+
+        B INT_MENU_SCREEN_PS2_RET
+        NOP
+
+    INT_MENU_SCREEN_PS2_DARROW:
+        LI R0 @DATA_MENU_SELECTED
+        LW R0 R4 0
+
+        LI R0 0xbf
+        SLL R0 R0 0
+
+        ; at boundary
+        CMPI R4 3
+        BTEQZ INT_MENU_SCREEN_PS2_RET
+        NOP
+
+
+       ; --------------- clear the selected sign ----------------
+
+        LI R0 0xbf
+        SLL R0 R0 0
+
+        SLL R5 R4 5
+        ADDIU R5 90 ; position y
+        ADDIU R5 90 ; position y
+
+
+        LI R3 62
+        SW R0 R3 0x8
+
+        SW R0 R5 0xc
+
+        LI R3 70
+        SW R0 R3 0xd
+
+        LLI R3 0xffff
+        SW R0 R3 0xe
+
+        MFPC R7
+        ADDIU R7 3
+        NOP
+        B TESTPRINT
+        NOP
+        ; --------------------------
+        LLI R3 0b0010001000000001 ; the type
+        SW R0 R3 0xf
+
+
+
+        LI R0 @DATA_MENU_SELECTED
+        ADDIU R4 0x1
+        SW R0 R4 0
+        ; --------------- draw the new selected sign ----------------
+        LI R0 0xbf
+        SLL R0 R0 0
+
+        SLL R5 R4 5
+        ADDIU R5 90 ; position y
+        ADDIU R5 90 ; position y
+
+        LI R0 0xbf
+        SLL R0 R0 0
+
+        LI R3 62
+        SW R0 R3 0x8
+
+        SW R0 R5 0xc
+
+        LI R3 70
+        SW R0 R3 0xd
+
+        LI R3 0
+        SW R0 R3 0xe
+
+        MFPC R7
+        ADDIU R7 3
+        NOP
+        B TESTPRINT
+        NOP
+
+        ; --------------------------
+        LLI R3 0b0010001000000001 ; the type
+        SW R0 R3 0xf
+
+        B INT_MENU_SCREEN_PS2_RET
+        NOP
+
+    INT_MENU_SCREEN_PS2_ENTER:
+        LI R4 1
+        LI R0 @DATA_MENU_OK
+        SW R0 R4 0
+
+
+
+        B INT_MENU_SCREEN_PS2_RET
+        NOP
+
+    INT_MENU_SCREEN_PS2_RET:
+        LI R0 @KEY_LAST
+        SW R0 R1 0 ; update
+
+
+        LW_SP R7 0xffff
+        ADDSP 0xffff
+
+        JR R7
+        NOP
+
+INT_ABOUT:
+    JR R7
+    NOP
 
 INT_TYPIST:
-    ERET
+    JR R7
+    NOP
 
 INT_TANK:
-    ERET
+    JR R7
+    NOP
 
 INT_SNAKE:
-    ERET
+    JR R7
+    NOP
 
     
 CLEAR_SCREEN:
@@ -549,8 +918,12 @@ PRINT_STRING:
 
 ; the menu screen returns the option in R0
 MENU_SCREEN:
+    ADDSP 1
+    
+    SW_SP R7 0xffff
+
     LI R0 @GLOBAL_STATE
-    LI R1 2
+    LI R1 1
     SW R0 R1 0
 
 ; clear the screen
@@ -563,6 +936,7 @@ MENU_SCREEN:
 
     LI R1 @DATA_STRING ; to write the data for printing the title
 
+    ; --------------------- PRINT THE TITLE -------------------
     LI R0 @DATA_MENU_TITLE ; the title
     SW R1 R0 0
 
@@ -587,8 +961,95 @@ MENU_SCREEN:
     B PRINT_STRING
     NOP
 
+    ; ----------------- PRINT THE OPTIONS -------------------
+    LI R2 @DATA_MENU_OPTION0 ; R2=address of the first option
+    LI R4 0
+
+    LI R5 180 ; x
+    SW R1 R5 3
+
+    LI R5 100 ; y
+    SW R1 R5 4
+
+    LLI R5 0b0010001000000001 ; the type
+    SW R1 R5 5
+
+    MENU_OPTION_LOOP: 
+        LW R2 R3 0 ; R3=length
+        SW R1 R3 1
+
+        ADDIU R2 1
+
+        SW R1 R2 0 ; text
+
+
+        LI R5 0 ; color
+        SW R1 R5 2
+
+        MFPC R7
+        ADDIU R7 3
+        NOP
+        B PRINT_STRING
+        NOP
+        
+        ; set the next x position
+        LW R1 R5 3
+        ADDIU R5 32
+        SW R1 R5 3
+
+        ; reset the y position
+        LI R5 100 ; y
+        SW R1 R5 4
+
+        ADDU R2 R3 R2 ; move to the next option
+        ADDIU R4 1
+        
+        CMPI R4 4
+        BTNEZ MENU_OPTION_LOOP
+        NOP
+    
+    ; ------- set the selection state -------
+
+    LI R1 0
+
+    LI R0 @DATA_MENU_SELECTED
+    SW R0 R1 0
+
+    LI R0 @DATA_MENU_OK
+    SW R0 R1 0
+
+    ; ---------- draw the selected sign ----------
+        LI R0 0xbf
+        SLL R0 R0 0
+
+        LI R1 62
+        SW R0 R1 0x8
+
+        LI R1 180
+        SW R0 R1 0xc
+
+        LI R1 70
+        SW R0 R1 0xd
+
+        LI R1 0
+        SW R0 R1 0xe
+
+        MFPC R7
+        ADDIU R7 3
+        NOP
+        B TESTPRINT
+        NOP
+
+        LLI R1 0b0010001000000001 ; the type
+        SW R0 R1 0xf
+
+    ; ------------------------------
+
+    LI R0 @GLOBAL_STATE
+    LI R1 1
+    SW R0 R1 0
+
     MENU_LOOP:
-                    
     B MENU_LOOP
     NOP
 
@@ -596,13 +1057,18 @@ MENU_SCREEN:
     LI R1 0
     SW R0 R1 0
 
+
+    SW_SP R7 0xffff
     JR R7
+    
+    ADDSP 0xffff
+
     NOP
 
 
 
 
-TYPE:
+TYPIST:
     JR R7
     NOP
     
@@ -745,6 +1211,10 @@ ABOUT:
     B PRINT_STRING
     NOP
 
+    
+    ABOUT_LOOP:
+        B ABOUT_LOOP
+        NOP
     
     LW_SP R7 0XFFFE
     ADDSP 0XFFF0

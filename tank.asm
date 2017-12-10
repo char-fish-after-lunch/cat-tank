@@ -1,145 +1,15 @@
 NOP
 NOP
 NOP
-B START
+B START_PAD
 NOP
 
 B INT ; interrupt position 0x5
 NOP
 
-; data section
-DATA:
-    GLOBAL_STATE:
-        .word 0
-    DATA_PATCH:
-    PATCH_MASK:
-        .pad 16
-    PATCH_COLOR:
-        .word 0
-    PATCH_X:
-        .word 0
-    PATCH_Y:
-        .word 0
-    PATCH_TYPE:
-        .word 0
-    DATA_STRING:
-    STRING_POINTER:
-        .word 0
-    STRING_LEN:
-        .word 0
-    STRING_COLOR:
-        .word 0
-    STRING_X:
-        .word 0
-    STRING_Y:
-        .word 0
-    STRING_TYPE:
-        .word 0
-    KEY_LAST: ; the last scan code
-        .word 0
-    DATA_MENU:
-        DATA_MENU_TITLE:
-            .ascii WELCOME TO CATPAD! 
-        DATA_MENU_OPTION0:
-            DATA_MENU_OPTION0_LEN:
-            .word 6
-            DATA_MENU_OPTION0_TEXT:
-            .ascii Typist
-        DATA_MENU_OPTION1:
-            DATA_MENU_OPTION1_LEN:
-            .word 4
-            DATA_MENU_OPTION1_TEXT:
-            .ascii Tank
-        DATA_MENU_OPTION2:
-            DATA_MENU_OPTION2_LEN:
-            .word 5
-            DATA_MENU_OPTION2_TEXT:
-            .ascii Snake
-        DATA_MENU_OPTION3:
-            DATA_MENU_OPTION3_LEN:
-            .word 5
-            DATA_MENU_OPTION3_TEXT:
-            .ascii About
-        DATA_MENU_SELECTED:
-            .word 0
-        DATA_MENU_OK:
-            .word 0
-    DATA_TANK:
-
-        DATA_TANK_MAP:
-            .pad 225
-    DATA_ABOUT:
-        DATA_ABOUT_TITLE:
-            .ascii ABOUT CATPAD
-        DATA_ABOUT_INFO:
-            .ascii CATPAD is a pipelined PC made by:
-        DATA_ABOUT_AUTHOR1:
-            .ascii Catfish,
-        DATA_ABOUT_AUTHOR2:
-            .ascii Jason_Yu, 
-        DATA_ABOUT_AUTHOR3:
-            .ascii and John_WJs.
-
-START:
-    LI R0 0x00bf
-    SLL R0 R0 0x0000
-    ADDIU R0 0x0010
-    MTSP R0
-
-
-    MAIN_LOOP:
-
-                ; enter the menu screen
-        MFPC R7
-        ADDIU R7 3
-        NOP
-        B MENU_SCREEN
-        NOP
-        ; R0 = choice
-
-        MFPC R7
-        ADDIU R7 FUNC_RET
-
-        CMPI R0 0
-        BTEQZ TYPIST_PAD
-        NOP
-
-        CMPI R0 1
-        BTEQZ TANK_PAD
-        NOP
-
-        CMPI R0 2
-        BTEQZ SNAKE_PAD
-        NOP
-
-        CMPI R0 3
-        BTEQZ ABOUT_PAD
-        NOP
-
-        NOP
-        FUNC_RET:
-
-    B MAIN_LOOP
-    NOP
-
-TYPIST_PAD:
-    LLI R5 @TYPIST    
-    JR R5
-    NOP
-
-TANK_PAD:
-    LLI R5 @TANK
-    JR R5
-    NOP
-
-SNAKE_PAD:
-    LLI R5 @SNAKE
-    JR R5
-    NOP
-
-ABOUT_PAD:
-    LLI R5 @ABOUT
-    JR R5
+START_PAD:
+    LLI R0 @START
+    JR R0
     NOP
 
 INT:
@@ -210,25 +80,205 @@ INT:
     ERET
 
 INT_MENU_SCREEN_PAD:
-    B INT_MENU_SCREEN
+    LLI R0 @INT_MENU_SCREEN
+    JR R0
     NOP
 
 INT_TYPIST_PAD:
-    B INT_TYPIST
+    LLI R0 @INT_TYPIST
+    JR R0
     NOP
 
 INT_SNAKE_PAD:
-    B INT_SNAKE
+    LLI R0 @INT_SNAKE
+    JR R0
     NOP
 
 INT_TANK_PAD:
-    B INT_TANK
+    LLI R0 @INT_TANK
+    JR R0
     NOP
 
 INT_ABOUT_PAD:
-    B INT_ABOUT
+    LLI R0 @INT_ABOUT
+    JR R0
     NOP
 
+
+; data section
+DATA:
+    GLOBAL_STATE:
+        .word 0
+    GLOBAL_ESC:
+        .word 0
+    DATA_PATCH:
+    PATCH_MASK:
+        .pad 16
+    PATCH_COLOR:
+        .word 0
+    PATCH_X:
+        .word 0
+    PATCH_Y:
+        .word 0
+    PATCH_TYPE:
+        .word 0
+    DATA_STRING:
+    STRING_POINTER:
+        .word 0
+    STRING_LEN:
+        .word 0
+    STRING_COLOR:
+        .word 0
+    STRING_X:
+        .word 0
+    STRING_Y:
+        .word 0
+    STRING_TYPE:
+        .word 0
+    KEY_LAST: ; the last scan code
+        .word 0
+    DATA_MENU:
+        DATA_MENU_TITLE:
+            .ascii WELCOME TO CATPAD! 
+        DATA_MENU_OPTION0:
+            DATA_MENU_OPTION0_LEN:
+            .word 6
+            DATA_MENU_OPTION0_TEXT:
+            .ascii Typist
+        DATA_MENU_OPTION1:
+            DATA_MENU_OPTION1_LEN:
+            .word 4
+            DATA_MENU_OPTION1_TEXT:
+            .ascii Tank
+        DATA_MENU_OPTION2:
+            DATA_MENU_OPTION2_LEN:
+            .word 5
+            DATA_MENU_OPTION2_TEXT:
+            .ascii Snake
+        DATA_MENU_OPTION3:
+            DATA_MENU_OPTION3_LEN:
+            .word 5
+            DATA_MENU_OPTION3_TEXT:
+            .ascii About
+        DATA_MENU_SELECTED:
+            .word 0
+        DATA_MENU_OK:
+            .word 0
+    DATA_TANK:
+
+        DATA_TANK_MAP:
+            .pad 256
+    DATA_ABOUT:
+        DATA_ABOUT_TITLE:
+            .ascii ABOUT CATPAD
+        DATA_ABOUT_INFO:
+            .ascii CATPAD is a pipelined PC made by:
+        DATA_ABOUT_AUTHOR1:
+            .ascii Catfish,
+        DATA_ABOUT_AUTHOR2:
+            .ascii Jason_Yu, 
+        DATA_ABOUT_AUTHOR3:
+            .ascii and John_WJs.
+
+    DATA_TYPIST:
+        DATA_TYPIST_TITLE:
+            .ascii Type these sentences!
+        DATA_SENTENCE_POINTERS:
+            .word 0
+            .word 0
+            .word 0 
+        DATA_SENTENCE_LENGTHS:
+            .word 11
+            .word 30
+            .word 28
+        DATA_SENTENCE_XS:
+            .word 0x70
+            .word 0xA0
+            .word 0xD0
+
+        DATA_TYPIST_SENTENCE1:
+            .ascii hello world
+        DATA_TYPIST_SENTENCE2:
+            .ascii i love study, i love deadlines
+        DATA_TYPIST_SENTENCE3:
+            .ascii typing these words is boring
+
+        DATA_TYPIST_CUR_SENTENCE:
+            .word 0
+
+        DATA_TYPIST_CUR_INDEX:
+            .word 0
+
+    DATA_SNAKE:
+        SNAKE_MAP:
+            .pad 256
+        SNAKE_QUEUE:
+            .pad 256
+        SNAKE_DIRECTION:
+            .word 0
+
+START:
+    LI R0 0x00bf
+    SLL R0 R0 0x0000
+    ADDIU R0 0x0010
+    MTSP R0
+
+
+    MAIN_LOOP:
+
+                ; enter the menu screen
+        MFPC R7
+        ADDIU R7 3
+        NOP
+        B MENU_SCREEN
+        ;B TYPIST_PAD
+        NOP
+        ; R0 = choice
+
+        MFPC R7
+        ADDIU R7 FUNC_RET
+
+        CMPI R0 0
+        BTEQZ TYPIST_PAD
+        NOP
+
+        CMPI R0 1
+        BTEQZ TANK_PAD
+        NOP
+
+        CMPI R0 2
+        BTEQZ SNAKE_PAD
+        NOP
+
+        CMPI R0 3
+        BTEQZ ABOUT_PAD
+        NOP
+
+        NOP
+        FUNC_RET:
+
+    B MAIN_LOOP
+    NOP
+
+TYPIST_PAD:
+    LLI R5 @TYPIST    
+    JR R5
+    NOP
+
+TANK_PAD:
+    LLI R5 @TANK
+    JR R5
+    NOP
+
+SNAKE_PAD:
+    LLI R5 @SNAKE
+    JR R5
+    NOP
+
+ABOUT_PAD:
+    LLI R5 @ABOUT
+    JR R5
+    NOP
 INT_MENU_SCREEN:
     MFCS R0
     CMPI R0 0xa
@@ -1069,6 +1119,133 @@ MENU_SCREEN:
 
 
 TYPIST:
+    ADDSP 10
+    SW_SP R7 0XFFFE
+
+    ; whatever, clear screen first
+    MFPC R7
+    ADDIU R7 3
+    NOP
+    B CLEAR_SCREEN
+    NOP
+
+    ; init pointers
+    LLI R1 @DATA_TYPIST_SENTENCE1
+    LLI R2 @DATA_SENTENCE_POINTERS
+    SW R2 R1 0
+
+    LLI R1 @DATA_TYPIST_SENTENCE2
+    LLI R2 @DATA_SENTENCE_POINTERS
+    SW R2 R1 1
+
+    LLI R1 @DATA_TYPIST_SENTENCE3
+    LLI R2 @DATA_SENTENCE_POINTERS
+    SW R2 R1 2
+    
+    ; init user state
+    LLI R2 @DATA_TYPIST_CUR_INDEX
+    LLI R1 0
+    SW R2 R1 0
+
+    LLI R2 @DATA_TYPIST_CUR_SENTENCE
+    LLI R1 0
+    SW R2 R1 0
+
+
+    
+
+    ; print typist title
+    LI R1 @DATA_STRING
+    LLI R2 @DATA_TYPIST_TITLE
+    SW R1 R2 0
+    LI R2 21
+    SW R1 R2 1
+    LI R2 0B10010010 ; COLOR: GRAY CLOSE TO BLACK
+    SW R1 R2 2
+    LI R2 0X30
+    SW R1 R2 3
+    LI R2 88
+    SW R1 R2 4
+
+    LI R2 0X22 ; TWICE SIZE
+    SLL R2 R2 0
+    LI R3 0XFF
+    ADDU R3 R2 R2
+    SW R1 R2 5
+
+    MFPC R7
+    ADDIU R7 3
+    NOP
+    B PRINT_STRING
+    NOP
+
+
+
+    LI R4 0 ; sentence number
+
+    TYPE_PRINT_SENTENCE_LOOP:
+        ; print 1 sentence
+
+        LI R1 @DATA_STRING
+        LLI R3 @DATA_SENTENCE_POINTERS
+        ADDU R3 R4 R3
+        LW R3 R2 0 ; R2 points to real str
+        SW R1 R2 0
+
+        LLI R3 @DATA_SENTENCE_LENGTHS
+        ADDU R3 R4 R3
+        LW R3 R2 0 ; sentence length 
+        SW R1 R2 1
+
+        LLI R2 0B101101101 ; COLOR: SUPER LIGHT GRAY
+        SW R1 R2 2
+
+        LLI R3 @DATA_SENTENCE_XS
+        ADDU R3 R4 R3
+        LW R3 R2 0 ; sentence position (x) 
+        SW R1 R2 3
+
+        LI R2 136 ; sentence position (y, fixed)
+        SW R1 R2 4
+
+        LI R2 0X12 ; single size
+        SLL R2 R2 0
+        LI R3 0XFF
+        ADDU R3 R2 R2
+        SW R1 R2 5
+
+        MFPC R7
+        ADDIU R7 3
+        NOP
+        B PRINT_STRING
+        NOP
+
+        ADDIU R4 1
+        CMPI R4 3
+        BTNEZ TYPE_PRINT_SENTENCE_LOOP
+        NOP
+
+
+TYPIST_STUCK_LOOP:
+    NOP
+    NOP
+    NOP
+    NOP
+
+    LI R2 @GLOBAL_ESC
+    LW R2 R1 0
+    NOP
+    BEQZ R1 TYPIST_STUCK_LOOP
+    NOP
+    NOP
+    LI R1 0
+    SW R2 R1 0
+    NOP
+    NOP
+
+
+    LW_SP R7 0XFFFE
+    ADDSP 0XFFF0
     JR R7
     NOP
     
@@ -1086,10 +1263,17 @@ ABOUT:
     ADDSP 10
     SW_SP R7 0XFFFE
 
+    ; whatever, clear screen first
+    MFPC R7
+    ADDIU R7 3
+    NOP
+    B CLEAR_SCREEN
+    NOP
+
     LI R1 @DATA_STRING
 
     ; print about title
-    LI R2 @DATA_ABOUT_TITLE
+    LLI R2 @DATA_ABOUT_TITLE
     SW R1 R2 0
     LI R2 12
     SW R1 R2 1
@@ -1097,10 +1281,10 @@ ABOUT:
     SW R1 R2 2
     LI R2 0X50
     SW R1 R2 3
-    LI R2 0XA0
+    LI R2 112
     SW R1 R2 4
 
-    LI R2 0X22 ; TWICE SIZE
+    LI R2 0X32 ; TRIPLE SIZE
     SLL R2 R2 0
     LI R3 0XFF
     ADDU R3 R2 R2
@@ -1114,13 +1298,13 @@ ABOUT:
     NOP
 
     ; print about info
-    LI R2 @DATA_ABOUT_INFO
+    LLI R2 @DATA_ABOUT_INFO
     SW R1 R2 0
     LI R2 33
     SW R1 R2 1
     LI R2 0B11011011 ; COLOR: BRIGHT GRAY
     SW R1 R2 2
-    LI R2 0X70
+    LI R2 0XA0
     SW R1 R2 3
     LI R2 0X7C
     SW R1 R2 4
@@ -1138,13 +1322,13 @@ ABOUT:
     NOP
 
     ; print about author1
-    LI R2 @DATA_ABOUT_AUTHOR1
+    LLI R2 @DATA_ABOUT_AUTHOR1
     SW R1 R2 0
     LI R2 8
     SW R1 R2 1
     LI R2 0B11011011 ; COLOR: BRIGHT GRAY
     SW R1 R2 2
-    LI R2 0X90
+    LI R2 0XC0
     SW R1 R2 3
     LI R2 0XC0
     SW R1 R2 4
@@ -1163,13 +1347,13 @@ ABOUT:
 
 
     ; print about author2
-    LI R2 @DATA_ABOUT_AUTHOR2
+    LLI R2 @DATA_ABOUT_AUTHOR2
     SW R1 R2 0
     LI R2 9
     SW R1 R2 1
     LI R2 0B11011011 ; COLOR: BRIGHT GRAY
     SW R1 R2 2
-    LI R2 0XC0
+    LI R2 0XE0
     SW R1 R2 3
     LI R2 0Xb8
     SW R1 R2 4
@@ -1188,13 +1372,14 @@ ABOUT:
 
     
     ; print about author3
-    LI R2 @DATA_ABOUT_AUTHOR3
+    LLI R2 @DATA_ABOUT_AUTHOR3
     SW R1 R2 0
     LI R2 13
     SW R1 R2 1
     LI R2 0B11011011 ; COLOR: BRIGHT GRAY
     SW R1 R2 2
-    LI R2 0XE0
+    LI R2 0X1
+    SLL R2 R2 0
     SW R1 R2 3
     LI R2 0X98
     SW R1 R2 4
@@ -1211,11 +1396,21 @@ ABOUT:
     B PRINT_STRING
     NOP
 
-    
-    ABOUT_LOOP:
-        B ABOUT_LOOP
-        NOP
-    
+    ABOUT_STUCK_LOOP:
+    NOP
+    NOP
+    NOP
+
+    LI R2 @GLOBAL_ESC
+    LW R2 R1 0
+    BEQZ R1 ABOUT_STUCK_LOOP
+    NOP
+
+    LI R1 0
+    SW R2 R1 0
+    NOP
+    NOP
+
     LW_SP R7 0XFFFE
     ADDSP 0XFFF0
     JR R7

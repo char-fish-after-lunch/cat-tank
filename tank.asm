@@ -635,28 +635,39 @@ TYPE:
     ADDSP 10
     SW_SP R7 0XFFFE
 
+    ; whatever, clear screen first
+    MFPC R7
+    ADDIU R7 3
+    NOP
+    B CLEAR_SCREEN
+    NOP
+
     ; init pointers
     LI R1 @DATA_TYPIST_SENTENCE1
     LI R2 @DATA_SENTENCE_POINTERS
-    LW R2 R1 0
+    SW R2 R1 0
 
     LI R1 @DATA_TYPIST_SENTENCE2
     LI R2 @DATA_SENTENCE_POINTERS
-    LW R2 R1 1
+    SW R2 R1 1
 
     LI R1 @DATA_TYPIST_SENTENCE3
     LI R2 @DATA_SENTENCE_POINTERS
-    LW R2 R1 2
+    SW R2 R1 2
     
+    ; init user state
+    LI R2 @DATA_TYPIST_CUR_INDEX
+    LI R1 0
+    SW R2 R1 0
+
+    LI R2 @DATA_TYPIST_CUR_SENTENCE
+    LI R1 0
+    SW R2 R1 0
+
+
     
 
     ; print typist title
-
-    MFPC R7
-    ADDIU R7 0x0003
-    NOP
-    B TESTPRINT
-
     LI R1 @DATA_STRING
     LI R2 @DATA_TYPIST_TITLE
     SW R1 R2 0
@@ -686,13 +697,7 @@ TYPE:
     LI R4 0 ; sentence number
 
     TYPE_PRINT_SENTENCE_LOOP:
-
         ; print 1 sentence
-        MFPC R7
-        ADDIU R7 0x0003
-        NOP
-        B TESTPRINT
-
 
         LI R1 @DATA_STRING
         LI R3 @DATA_SENTENCE_POINTERS
@@ -722,18 +727,26 @@ TYPE:
         ADDU R3 R2 R2
         SW R1 R2 5
 
+        MFPC R7
+        ADDIU R7 3
+        NOP
+        B PRINT_STRING
+        NOP
+
         ADDIU R4 1
         CMPI R4 3
         BTNEZ TYPE_PRINT_SENTENCE_LOOP
         NOP
 
-    
-    MFPC R7
-    ADDIU R7 3
-    NOP
-    B PRINT_STRING
-    NOP
 
+TYPIST_STUCK_LOOP:
+    NOP
+    NOP
+    NOP
+    NOP
+    B TYPIST_STUCK_LOOP
+    NOP
+    NOP
 
 
     LW_SP R7 0XFFFE

@@ -211,6 +211,10 @@ DATA:
             .word 0
 
     DATA_SNAKE:
+        SNAKE_RANDOM:
+            .word 0
+        SNAKE_RANDOM_ADD:
+            .word 0
         SNAKE_MAP:
             .pad 256
         SNAKE_QUEUE:
@@ -1338,8 +1342,47 @@ TANK:
     NOP
 
 SNAKE:
+    
+    ADDSP 10
+    SW_SP R7 0XFFFE
+
+    ; whatever, clear screen first
+    MFPC R7
+    ADDIU R7 3
+    NOP
+    B CLEAR_SCREEN
+    NOP
+
+    ; clear the map and snake
+    LI R1 0
+    
+;    CLEAR_SNAKE_LOOP:
+;
+ ;       ADDIU R1 1
+  ;      CMPI 
+
+
+    
+    SNAKE_STUCK_LOOP:
+    NOP
+    NOP
+    NOP
+
+    LI R2 @GLOBAL_ESC
+    LW R2 R1 0
+    BEQZ R1 SNAKE_STUCK_LOOP
+    NOP
+
+    LI R1 0
+    SW R2 R1 0
+    NOP
+    NOP
+
+    LW_SP R7 0XFFFE
+    ADDSP 0XFFF0
     JR R7
     NOP
+
 
 ABOUT:
 

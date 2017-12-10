@@ -78,6 +78,7 @@ INT:
     ADDSP 0xfff7
 
     ERET
+    NOP
 
 INT_MENU_SCREEN_PAD:
     LLI R0 @INT_MENU_SCREEN
@@ -235,6 +236,9 @@ START:
         NOP
         ; R0 = choice
 
+        LI R1 @DATA_MENU_SELECTED
+        LW R1 R0 0
+
         MFPC R7
         ADDIU R7 FUNC_RET
 
@@ -279,34 +283,6 @@ ABOUT_PAD:
     LLI R5 @ABOUT
     JR R5
     NOP
-INT_MENU_SCREEN:
-    MFCS R0
-    CMPI R0 0xa
-    BTEQZ INT_MENU_SCREEN_PS2
-    NOP
-    JR R7
-    NOP
-
-INT_MENU_SCREEN_PS2:
-    ADDSP 1
-    SW_SP R7 0xffff
-    
-    LI R0 0xbf
-    SLL R0 R0 0 ; R0 = 0xbf00
-
-    LW R0 R1 0x4 ; scan code
-    
-    SW R0 R1 0 ; for testing
-
-    ; B INT_MENU_SCREEN_PS2_RET
-
-    LI R0 @KEY_LAST
-    LW R0 R2 0 ; last scan code
-
-    
-    LI R3 0xe0
-    CMP R2 R3
-
 
 INT_MENU_SCREEN:
     MFCS R0
@@ -325,7 +301,7 @@ INT_MENU_SCREEN_PS2:
 
     LW R0 R1 0x4 ; scan code
     
-    SW R0 R1 0 ; for testing
+    ;SW R0 R1 0 ; for testing
 
     ; B INT_MENU_SCREEN_PS2_RET
 
@@ -542,12 +518,64 @@ INT_MENU_SCREEN_PS2:
 
     INT_MENU_SCREEN_PS2_ENTER:
         LI R4 1
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
         LI R0 @DATA_MENU_OK
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
         SW R0 R4 0
 
 
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
 
         B INT_MENU_SCREEN_PS2_RET
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
         NOP
 
     INT_MENU_SCREEN_PS2_RET:
@@ -1100,19 +1128,74 @@ MENU_SCREEN:
     SW R0 R1 0
 
     MENU_LOOP:
-    B MENU_LOOP
-    NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        LI R5 @DATA_MENU_OK
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        LW R5 R4 0
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        BEQZ R4 MENU_LOOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+
+    LI R0 0xbf
+    SLL R0 R0 0
+    SW R0 R4 0
 
     LI R0 @GLOBAL_STATE
     LI R1 0
     SW R0 R1 0
 
 
-    SW_SP R7 0xffff
-    JR R7
-    
+    LW_SP R7 0xffff
     ADDSP 0xffff
 
+    JR R7
     NOP
 
 
@@ -1400,10 +1483,70 @@ ABOUT:
     NOP
     NOP
     NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
 
     LI R2 @GLOBAL_ESC
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
     LW R2 R1 0
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
     BEQZ R1 ABOUT_STUCK_LOOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
     NOP
 
     LI R1 0

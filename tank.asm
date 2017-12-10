@@ -212,12 +212,18 @@ DATA:
     DATA_SNAKE:
         SNAKE_RANDOM:
             .word 0
-        SNAKE_RANDOM_ADD:
+        SNAKE_GAME_STATE:
+            .word 0
+        SNAKE_TIME_COUNTER:
             .word 0
         SNAKE_MAP:
             .pad 256
         SNAKE_QUEUE:
             .pad 256
+        SNAKE_QUEUE_HEAD:
+            .word 0
+        SNAKE_QUEUE_TAIL:
+            .word 0    
         SNAKE_DIRECTION:
             .word 0
 
@@ -234,13 +240,18 @@ START:
         MFPC R7
         ADDIU R7 3
         NOP
-        B MENU_SCREEN
-        ;B TYPIST_PAD
+        ;B MENU_SCREEN
         NOP
         ; R0 = choice
 
         MFPC R7
         ADDIU R7 FUNC_RET
+        
+        
+        B SNAKE_PAD
+        NOP
+        NOP
+
 
         CMPI R0 0
         BTEQZ TYPIST_PAD
@@ -283,34 +294,7 @@ ABOUT_PAD:
     LLI R5 @ABOUT
     JR R5
     NOP
-INT_MENU_SCREEN:
-    MFCS R0
-    CMPI R0 0xa
-    BTEQZ INT_MENU_SCREEN_PS2
-    NOP
-    JR R7
-    NOP
-
-INT_MENU_SCREEN_PS2:
-    ADDSP 1
-    SW_SP R7 0xffff
     
-    LI R0 0xbf
-    SLL R0 R0 0 ; R0 = 0xbf00
-
-    LW R0 R1 0x4 ; scan code
-    
-    SW R0 R1 0 ; for testing
-
-    ; B INT_MENU_SCREEN_PS2_RET
-
-    LI R0 @KEY_LAST
-    LW R0 R2 0 ; last scan code
-
-    
-    LI R3 0xe0
-    CMP R2 R3
-
 
 INT_MENU_SCREEN:
     MFCS R0
@@ -578,10 +562,405 @@ INT_TANK:
     NOP
 
 INT_SNAKE:
+
+    ADDSP 1
+    SW_SP R7 0xffff
+
+    MFCS R0
+    CMPI R0 0xa
+
+    BTEQZ INT_SNAKE_PS2
+    NOP
+    NOP
+
+    B INT_SNAKE_CLK
+    NOP
+    NOP
+
     JR R7
     NOP
 
+
+INT_SNAKE_PS2:
+    LI R0 0XBF
+    SLL R0 R0 0
+
+    LW R0 R1 0X4 ; scan code
+
+    LI R0 @KEY_LAST
+    LW R0 R2 0;
+
+    LI R3 0XE0
+    CMP R2 R3
+    BTEQZ INT_SNAKE_PS2_PAD
+    NOP
+    LI R3 0XF0
+    CMP R2 R3
+    BTNEZ INT_SNAKE_PS2_RET_SKIP1
+    NOP
+    NOP
+    B INT_SNAKE_PS2_RET
+    NOP
+    NOP
+    NOP
+    INT_SNAKE_PS2_RET_SKIP1:
+
+    NOP
+
+    INT_SNAKE_PS2_NO_PAD:
+        CMPI R1 0X29
+        BTEQZ INT_SNAKE_PS2_SPACE
+        NOP
+
+        B INT_SNAKE_PS2_RET
+        NOP
     
+    INT_SNAKE_PS2_PAD:
+        CMPI R1 0X75
+        BTEQZ INT_SNAKE_PS2_UARROW
+        NOP
+
+        CMPI R1 0X72
+        BTEQZ INT_SNAKE_PS2_DARROW
+        NOP
+        
+        CMPI R1 0X6B
+        BTEQZ INT_SNAKE_PS2_LARROW
+        NOP
+        
+        CMPI R1 0X74
+        BTEQZ INT_SNAKE_PS2_RARROW
+        NOP
+
+        B INT_SNAKE_PS2_RET
+        NOP
+        NOP
+
+        INT_SNAKE_PS2_SPACE:
+
+            LLI R2 @SNAKE_GAME_STATE
+            LI R3 1
+            SW R2 R3 0
+            
+            B INT_SNAKE_PS2_RET
+            NOP
+
+        INT_SNAKE_PS2_UARROW:
+            LLI R2 @SNAKE_DIRECTION
+            LI R3 0
+            SW R2 R3 0
+
+            B INT_SNAKE_PS2_RET
+            NOP
+
+
+        INT_SNAKE_PS2_DARROW:
+            LLI R2 @SNAKE_DIRECTION
+            LI R3 1
+            SW R2 R3 0
+
+            B INT_SNAKE_PS2_RET
+            NOP
+
+        INT_SNAKE_PS2_LARROW:
+            LLI R2 @SNAKE_DIRECTION
+            LI R3 2
+            SW R2 R3 0
+
+            B INT_SNAKE_PS2_RET
+            NOP
+
+        INT_SNAKE_PS2_RARROW:
+            LLI R2 @SNAKE_DIRECTION
+            LI R3 3
+            SW R2 R3 0
+
+            B INT_SNAKE_PS2_RET
+            NOP
+
+
+INT_SNAKE_PS2_RET:
+    LI R0 @KEY_LAST
+    SW R0 R1 0 ; update
+
+    LW_SP R7 0xffff
+    ADDSP 0xffff
+
+    JR R7
+    NOP
+
+
+INT_SNAKE_CLK:
+
+; TEST
+;    LI R0 0XBF
+;    SLL R0 R0 0
+;    LI R1 0X77
+;    SW R0 R1 0
+
+    LLI R1 @SNAKE_GAME_STATE
+    LW R1 R2 0
+
+        ; TEST
+;    LI R0 0XBF
+;    SLL R0 R0 0
+;    SW R0 R2 0
+
+
+    CMPI R2 0 ; if state = 0, game is not good
+    BTNEZ SNAKE_REFRESH_SCREEN 
+    NOP
+    NOP
+
+    B SNAKE_PAINT_SCREEN
+    NOP
+    NOP
+
+    LW_SP R7 0xffff
+    ADDSP 0xffff
+
+    JR R7
+    NOP
+
+
+SNAKE_REFRESH_SCREEN:
+
+    SNAKE_GAME_LOGIC:
+        LLI R5 @SNAKE_QUEUE_HEAD
+        LW R5 R4 0 ;  R4 - grid number of the snake head
+        LLI R5 @SNAKE_DIRECTION
+        LW R5 R3 0 ;  R3 - snake direction, u d l r
+        ADDIU3 R4 R2 0 ; R2 - prepare to be next grid of snake head
+
+        ADDIU3 R4 R1 0
+        LI R0 0XF0
+        AND R1 R0 ; R1 - x grid number
+        LI R0 0X0F
+        AND R0 R4 ; R0 - y grid number
+
+        CMPI R3 0
+        BTEQZ SNAKE_MOVES_UP
+        NOP
+
+        CMPI R3 1
+        BTEQZ SNAKE_MOVES_DOWN
+        NOP
+
+        CMPI R3 2
+        BTEQZ SNAKE_MOVES_LEFT
+        NOP
+
+        CMPI R3 3
+        BTEQZ SNAKE_MOVES_RIGHT
+        NOP
+
+        SNAKE_MOVES_UP:
+        ADDIU R2 0XF0
+        B SNAKE_CHECK_NEXT_GRID
+        NOP
+
+        SNAKE_MOVES_DOWN:
+        ADDIU R2 0X10
+        B SNAKE_CHECK_NEXT_GRID
+        NOP
+
+        SNAKE_MOVES_LEFT:
+        ADDIU R0 0XFF
+        LI R2 0X0F
+        AND R2 R0
+        ADDU R0 R1 R2
+        B SNAKE_CHECK_NEXT_GRID
+        NOP
+
+        SNAKE_MOVES_RIGHT:
+        ADDIU R0 1
+        LI R2 0X0F
+        AND R2 R0
+        ADDU R0 R1 R2
+        B SNAKE_CHECK_NEXT_GRID
+        NOP
+        NOP
+
+        SNAKE_CHECK_NEXT_GRID:
+        LLI R3 @SNAKE_MAP
+        ADDU R3 R2 R3 ; R3 - the next grid addr
+
+
+        LLI R0 @SNAKE_QUEUE_HEAD
+        LW R0 R1 0 ; R1 -> cur queue head
+        ADDIU R1 1 ; head++
+        LI R5 0XFF
+        AND R1 R5 ; head &= 0xff
+        SW R0 R1 0
+
+        LLI R0 @SNAKE_QUEUE
+        ADDU R0 R1 R1
+        SW R1 R2 0 ; queue[head] = next grid number
+
+
+        LLI R0 @SNAKE_QUEUE_TAIL
+        LW R0 R1 0 ; R1 -> cur queue tail
+
+        LLI R0 @SNAKE_QUEUE
+        ADDU R0 R1 R0  ; R0 -> the grid of tail
+        LI R1 0
+        SW R0 R1 0 ; grid of tail set as ground
+
+        LW R3 R2 0 ; R2 - the item on the next grid
+
+        LI R1 2
+        SW R3 R1 0 ; next grid -> set to head
+        LI R1 0
+        SW R4 R1 1 ; current grid -> set to body 
+
+        CMPI R2 1
+        BTEQZ SNAKE_MET_SNAKE_BODY
+        NOP
+
+        CMPI R2 2
+        BTEQZ SNAKE_MET_SNAKE_HEAD
+        NOP
+
+        CMPI R2 3
+        BTEQZ SNAKE_MET_APPLE
+        NOP
+
+        SNAKE_MET_SNAKE_BODY:
+        SNAKE_MET_SNAKE_HEAD:
+
+        LLI R0 @SNAKE_GAME_STATE
+        LI R1 0
+        SW R0 R1 0 ; game state set to 0, GAME OVER!
+
+        B SNAKE_GAME_LOGIC_END_GROWTH
+        NOP  
+
+        SNAKE_MET_APPLE:
+
+        ; TODO: GENERATE NEW APPLE
+        B SNAKE_GAME_LOGIC_END_GROWTH
+        NOP
+
+
+    SNAKE_GAME_LOGIC_END:
+
+    LLI R0 @SNAKE_QUEUE_TAIL
+    LW R0 R1 0 ; R1 -> cur queue tail
+    ADDIU R1 1
+    LI R2 0XFF
+    AND R1 R2 ; R1 -> (R1 + 1) % 256
+    SW R0 R1 0 ; queue tail <= q1
+
+    
+
+    SNAKE_GAME_LOGIC_END_GROWTH:
+
+SNAKE_PAINT_SCREEN:
+
+    NOP
+
+    LI R4 0 ; grid number (0-255)
+    
+
+
+    SNAKE_REFRESH_SCREEN_LOOP:
+
+        ADDIU3 R4 R2 0
+        SRL R2 R2 4
+        LI R3 0X0F
+
+        AND R2 R3 ; R2 - x grid number
+        SLL R2 R2 5 ; R2 - x coordinate
+        AND R3 R4 ; R3 - y grid number
+        SLL R3 R3 5 ; R3 - y coordinate
+
+        ; paint background color
+        MFPC R7
+        ADDIU R7 0x0003 
+        NOP
+        B TESTPRINT
+        NOP
+
+        LI R0 0xbf
+        SLL R0 R0 0 ; R0 : the start addr for graphic
+
+        LI R1 26
+        SW R0 R1 0x8 ; space
+        SW R0 R2 0xc ; coord
+        SW R0 R3 0xd ; coord
+        LLI R1 0b101101101
+        SW R0 R1 0xe ; color
+        LLI R1 0b0100001011111111 ; type
+        SW R0 R1 0xf
+
+        LLI R1 @SNAKE_MAP
+        ADDU R1 R4 R1
+        LW R1 R5 0 ; R5 - item on cur grid
+        ; items: 0 - ground, 1 - snake body, 2 - snake head, 3 - apple
+
+        CMPI R5 1
+        BTEQZ SNAKE_PRINT_SNAKE_BODY
+        NOP
+
+        CMPI R5 2
+        BTEQZ SNAKE_PRINT_SNAKE_HEAD
+        NOP
+
+        CMPI R5 3
+        BTEQZ SNAKE_PRINT_APPLE
+        NOP
+
+        B SNAKE_READY_NEXT_LOOP
+        NOP
+
+        SNAKE_PRINT_SNAKE_BODY:
+            LI R5 0B00100000
+            B SNAKE_PRINT_APPENDIX
+            NOP
+
+        SNAKE_PRINT_SNAKE_HEAD:
+            LI R5 0B00111000
+            B SNAKE_PRINT_APPENDIX
+            NOP
+
+        SNAKE_PRINT_APPLE:
+            LI R5 1
+            SLL R5 R5 0
+            B SNAKE_PRINT_APPENDIX
+            NOP
+
+        SNAKE_PRINT_APPENDIX:
+            ; paint appendix things on ground
+            MFPC R7
+            ADDIU R7 0x0003 
+            NOP
+            B TESTPRINT
+            NOP
+
+            LI R0 0xbf
+            SLL R0 R0 0 ; R0 : the start addr for graphic
+
+            LI R1 26
+            SW R0 R1 0x8 ; space
+            SW R0 R2 0xc ; coord
+            SW R0 R3 0xd ; coord
+            SW R0 R5 0xe ; color
+            LLI R1 0b0100001011111111 ; type
+            SW R0 R1 0xf
+
+    SNAKE_READY_NEXT_LOOP:
+
+        LI R5 0XFF
+        CMP R4 R5
+        BTEQZ SNAKE_REFRESH_SCREEN_LOOP_END
+        NOP
+        ADDIU R4 1
+        B SNAKE_REFRESH_SCREEN_LOOP
+        NOP
+    
+    SNAKE_REFRESH_SCREEN_LOOP_END:
+    
+
 CLEAR_SCREEN:
     LI R0 @GLOBAL_STATE
     LI R1 1
@@ -1259,7 +1638,13 @@ TANK:
     NOP
 
 SNAKE:
-    
+
+    ; TEST
+    LI R0 0XBF
+    SLL R0 R0 0
+    LI R1 0X99
+    SW R0 R1 0
+
     ADDSP 10
     SW_SP R7 0XFFFE
 
@@ -1270,28 +1655,126 @@ SNAKE:
     B CLEAR_SCREEN
     NOP
 
-    ; clear the map and snake
-    LI R1 0
-    
-;    CLEAR_SNAKE_LOOP:
-;
- ;       ADDIU R1 1
-  ;      CMPI 
 
+SNAKE_INIT_GAME:
+
+    LLI R2 @SNAKE_GAME_STATE
+    LI R1 0
+    SW R2 R1 0 ; game is not started
+
+    ; clear the map and snake
+    LI R1 4
+    LLI R2 @SNAKE_QUEUE_HEAD
+    SW R2 R1 0
+    LI R1 0
+    LLI R2 @SNAKE_QUEUE_TAIL
+    SW R2 R1 0
+
+
+    LI R1 0
+    LI R2 1
+    SLL R2 R2 0
+    CLEAR_SNAKE_LOOP:
+        LLI R3 @SNAKE_MAP
+        ADDU R3 R1 R3
+        LI R4 0
+        SW R3 R4 0
+        ADDIU R1 1
+        CMP R1 R2
+        BTNEZ CLEAR_SNAKE_LOOP
+        NOP
+
+    ; add initial snake on map and queue
+    LLI R2 @SNAKE_QUEUE
+    LLI R4 @SNAKE_MAP 
+
+    LI R1 0X33
+    SW R2 R1 0
+    ADDU R4 R1 R5
+    LI R6 1
+    SW R5 R6 0
+
+    LI R1 0X34
+    SW R2 R1 1
+    ADDU R4 R1 R5
+    LI R6 1
+    SW R5 R6 0
+
+    LI R1 0X35
+    SW R2 R1 2
+    ADDU R4 R1 R5
+    LI R6 1
+    SW R5 R6 0
+
+    LI R1 0X36
+    SW R2 R1 3
+    ADDU R4 R1 R5
+    LI R6 2        ; head here
+    SW R5 R6 0
+    
+
+
+    LI R0 @GLOBAL_STATE
+    LI R1 4
+    SW R0 R1 0
+    NOP
 
     
     SNAKE_STUCK_LOOP:
     NOP
     NOP
     NOP
+    NOP
+    NOP
 
     LI R2 @GLOBAL_ESC
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
     LW R2 R1 0
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
     BEQZ R1 SNAKE_STUCK_LOOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
     NOP
 
     LI R1 0
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
     SW R2 R1 0
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+
+
+    LI R0 @GLOBAL_STATE
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    LI R1 0
+    NOP
+    NOP
+    NOP
+    SW R0 R1 0
+    NOP
     NOP
     NOP
 

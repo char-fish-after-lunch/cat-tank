@@ -165,9 +165,9 @@ CLEAR_SCREEN:
     SW_SP R2 0xfffd
     SW_SP R3 0xfffc 
     SW_SP R4 0xfffb
-    SW_SP R5 0xffea
-    SW_SP R6 0xffe9 
-    SW_SP R7 0xffe8 
+    SW_SP R5 0xfffa
+    SW_SP R6 0xfff9 
+    SW_SP R7 0xfff8 
 
 
     LI R4 0x0000
@@ -206,7 +206,7 @@ START_OF_CLEAR_SCREEN_LOOP:
     ADDU R3 R0 R0
     SW R6 R0 0XE
 
-    LI R0 0X72
+    LI R0 0X74
     SLL R0 R0 0
     LI R3 0XFF
     ADDU R3 R0 R0
@@ -243,9 +243,9 @@ END_OF_CLEAR_SCREEN:
     LW_SP R2 0xfffd
     LW_SP R3 0xfffc 
     LW_SP R4 0xfffb
-    LW_SP R5 0xffea
-    LW_SP R6 0xffe9 
-    LW_SP R7 0xffe8 
+    LW_SP R5 0xfffa
+    LW_SP R6 0xfff9 
+    LW_SP R7 0xfff8 
 
     ADDSP 0XFFF0
 
@@ -289,9 +289,9 @@ DRAW_M_PATCH:
     SW_SP R2 0xfffd
     SW_SP R3 0xfffc 
     SW_SP R4 0xfffb
-    SW_SP R5 0xffea
-    SW_SP R6 0xffe9 
-    SW_SP R7 0xffe8 
+    SW_SP R5 0xfffa
+    SW_SP R6 0xfff9 
+    SW_SP R7 0xfff8 
 
 
     ; ----- set enlarged size shift
@@ -438,9 +438,9 @@ DRAW_M_PATCH:
     LW_SP R2 0xfffd
     LW_SP R3 0xfffc 
     LW_SP R4 0xfffb
-    LW_SP R5 0xffea
-    LW_SP R6 0xffe9 
-    LW_SP R7 0xffe8 
+    LW_SP R5 0xfffa
+    LW_SP R6 0xfff9 
+    LW_SP R7 0xfff8 
 
     ADDSP 0XFFF0
 
@@ -529,7 +529,7 @@ PRINT_STRING:
     LW_SP R6 0xfff9
     LW_SP R7 0xfff8
 
-    ADDSP 0xffe8
+    ADDSP 0xfff8
 
     JR R7
     NOP
@@ -543,11 +543,12 @@ MENU_SCREEN:
     SW R0 R1 0
 
 ; clear the screen
-;    MFPC R7
-;    ADDIU R7 3
-;    NOP
-;    B CLEAR_SCREEN
-;    NOP
+
+    MFPC R7
+    ADDIU R7 3
+    NOP
+    B CLEAR_SCREEN
+    NOP
 
     LI R1 @DATA_STRING ; to write the data for printing the title
 
@@ -566,7 +567,7 @@ MENU_SCREEN:
     LI R0 100 ; Y
     SW R1 R0 4
 
-    LLI R0 0b0100001000000001 ; the type
+    LLI R0 0b0010001000000001 ; the type
     SW R1 R0 5
 
     MFPC R7

@@ -56,6 +56,35 @@ DATA:
         DATA_ABOUT_AUTHOR3:
             .ascii and John_WJs.
 
+    DATA_TYPIST:
+        DATA_TYPIST_TITLE:
+            .ascii Type these sentences!
+        DATA_SENTENCE_POINTERS:
+            .word 0
+            .word 0
+            .word 0 
+        DATA_SENTENCE_LENGTHS:
+            .word 11
+            .word 30
+            .word 28
+        DATA_SENTENCE_XS:
+            .word 0x70
+            .word 0x100
+            .word 0x130
+
+        DATA_TYPIST_SENTENCE1:
+            .ascii hello world
+        DATA_TYPIST_SENTENCE2:
+            .ascii i love study, i love deadlines
+        DATA_TYPIST_SENTENCE3:
+            .ascii typing these words is boring
+
+        DATA_TYPIST_CUR_SENTENCE:
+            .word 0
+
+        DATA_TYPIST_CUR_INDEX:
+            .word 0
+
 START:
     LI R0 0x00bf
     SLL R0 R0 0x0000
@@ -603,6 +632,112 @@ MENU_SCREEN:
 
 
 TYPE:
+    ADDSP 10
+    SW_SP R7 0XFFFE
+
+    ; init pointers
+    LI R1 @DATA_TYPIST_SENTENCE1
+    LI R2 @DATA_SENTENCE_POINTERS
+    LW R2 R1 0
+
+    LI R1 @DATA_TYPIST_SENTENCE2
+    LI R2 @DATA_SENTENCE_POINTERS
+    LW R2 R1 1
+
+    LI R1 @DATA_TYPIST_SENTENCE3
+    LI R2 @DATA_SENTENCE_POINTERS
+    LW R2 R1 2
+    
+    
+
+    ; print typist title
+
+    MFPC R7
+    ADDIU R7 0x0003
+    NOP
+    B TESTPRINT
+
+    LI R1 @DATA_STRING
+    LI R2 @DATA_TYPIST_TITLE
+    SW R1 R2 0
+    LI R2 21
+    SW R1 R2 1
+    LI R2 0B10010010 ; COLOR: GRAY CLOSE TO BLACK
+    SW R1 R2 2
+    LI R2 0X30
+    SW R1 R2 3
+    LI R2 88
+    SW R1 R2 4
+
+    LI R2 0X22 ; TWICE SIZE
+    SLL R2 R2 0
+    LI R3 0XFF
+    ADDU R3 R2 R2
+    SW R1 R2 5
+
+    MFPC R7
+    ADDIU R7 3
+    NOP
+    B PRINT_STRING
+    NOP
+
+
+
+    LI R4 0 ; sentence number
+
+    TYPE_PRINT_SENTENCE_LOOP:
+
+        ; print 1 sentence
+        MFPC R7
+        ADDIU R7 0x0003
+        NOP
+        B TESTPRINT
+
+
+        LI R1 @DATA_STRING
+        LI R3 @DATA_SENTENCE_POINTERS
+        ADDU R3 R4 R3
+        SW R3 R2 0 ; R2 points to real str
+        SW R1 R2 0
+
+        LI R3 @DATA_SENTENCE_LENGTHS
+        ADDU R3 R4 R3
+        SW R3 R2 0 ; sentence length 
+        SW R1 R2 1
+
+        LLI R2 0B101101101 ; COLOR: SUPER LIGHT GRAY
+        SW R1 R2 2
+
+        LI R3 @DATA_SENTENCE_XS
+        ADDU R3 R4 R3
+        SW R3 R2 0 ; sentence position (x) 
+        SW R1 R2 3
+
+        LI R2 136 ; sentence position (y, fixed)
+        SW R1 R2 4
+
+        LI R2 0X12 ; single size
+        SLL R2 R2 0
+        LI R3 0XFF
+        ADDU R3 R2 R2
+        SW R1 R2 5
+
+        ADDIU R4 1
+        CMPI R4 3
+        BTNEZ TYPE_PRINT_SENTENCE_LOOP
+        NOP
+
+    
+    MFPC R7
+    ADDIU R7 3
+    NOP
+    B PRINT_STRING
+    NOP
+
+
+
+    LW_SP R7 0XFFFE
+    ADDSP 0XFFF0
     JR R7
     NOP
     
